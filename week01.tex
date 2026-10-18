@@ -11,6 +11,8 @@
 \renewcommand{\headleft}{769001 \textperiodcentered\ WEEK 01}
 \renewcommand{\headright}{DYNAMICS AND CODING IN THE BRAIN}
 
+\newcommand{\Diag}{\operatorname{Diag}}
+\providecommand{\norm}[1]{\lVert #1\rVert}
 \newcommand{\figcap}[1]{\par\smallskip{\small\color{muted}#1}\par}
 \newcommand{\parttitle}[2]{%
   \clearpage
@@ -681,6 +683,29 @@ For $\dot n = an$ with $a\neq 0$ the only fixed point is $n^*=0$ (no sick people
 For $a<0$ every state flows towards $0$; for $a>0$ every state flows away from $0$.}
 \end{center}
 
+The bonus hour asks how the system \emph{behaves around} a fixed point. That question has a name.
+
+\begin{defn}[Converge, diverge]
+A solution \term{converges} to $n^*$ if $n(t)\to n^*$ as $t\to\infty$: it gets as close as you like and stays there.
+It \term{diverges} if $|n(t)|$ grows without bound.
+Example: $n(t)=100e^{-0.1t}$ converges to $0$ ($100\to36.8\to13.5\to\dots$ at $t=0,10,20$);
+$n(t)=100e^{0.1t}$ diverges ($100\to272\to739\to\dots$).
+\end{defn}
+
+\begin{defn}[Stable and unstable fixed point]
+Start the system \emph{near} the fixed point, not exactly on it.
+\begin{itemize}
+  \item The fixed point is \term{stable} if every such start \hl{converges back} to it.
+  \item It is \term{unstable} if some starts arbitrarily close to it \hl{move away} from it.
+\end{itemize}
+For $\dot n = an$: if $a<0$, $n(t)=n_0e^{at}\to0$ from any $n_0$, so $n^*=0$ is stable. If $a>0$, even $n_0=0.001$ grows like $0.001e^{at}$, so $n^*=0$ is unstable.
+\end{defn}
+
+\begin{intuition}[A ball on a landscape]
+A stable fixed point is a ball resting at the bottom of a valley: nudge it and it rolls back. An unstable one is a ball balanced on a hilltop:
+it is at rest too, but the smallest nudge sends it away. In the plot above, \hl{the line crossing zero going down ($a<0$) means stable; going up ($a>0$) means unstable}.
+\end{intuition}
+
 \section{Adding outside input: $\dot n = an + I(t)$}
 
 Now let infected travellers enter the country at a rate $I(t)$ (people per unit time), and take $a<0$. The equation becomes
@@ -912,6 +937,46 @@ $t$ & $|\tilde x_1| = 0.204\,e^{-1.449t}$ & $\tilde x_2 = 0.204\,e^{3.449t}$ & $
 The $\vec u_1$ component \emph{dies out}, while the $\vec u_2$ component \emph{explodes}. After a short while $\vec x(t)$ points almost exactly along
 $\vec u_2 = (4.449,1)$: at $t=2$, $x_1/x_2 = 900/202 \approx 4.45$.
 \end{example}
+
+\section{Vocabulary: fixed points and stability in two dimensions}
+
+The words from the bonus hour (Part B: fixed point, converge, diverge, stable, unstable) carry over to vectors. Here they are in two dimensions.
+
+\begin{defn}[State, trajectory, phase portrait]
+The \term{state} is the vector $\vec x=(x_1,x_2)$, a point in the plane. As time runs, the state moves and traces a curve, the \term{trajectory}.
+A \term{phase portrait} is a drawing of many trajectories at once in the $(x_1,x_2)$ plane, with arrows for the direction of motion.
+It shows how the system behaves from \emph{every} starting point.
+\end{defn}
+
+\begin{defn}[Fixed point of $\dot{\vec x}=M\vec x$]
+A \term{fixed point} is a state where $\dot{\vec x}=\vec 0$, i.e.\ $M\vec x^*=\vec 0$. The origin $\vec x^*=\vec0$ is always one.
+If $M$ is invertible (no eigenvalue equal to $0$) it is the \emph{only} one. Example: for $M=\begin{pmatrix}3&2\\1&-1\end{pmatrix}$, $\det M=-5\neq0$, so $\vec 0$ is the only fixed point.
+\end{defn}
+
+\begin{defn}[Converge, diverge, stable, unstable (vectors)]
+\begin{itemize}
+  \item The system \term{converges} to $\vec 0$ if $\vec x(t)\to\vec 0$, i.e.\ every component goes to $0$. It \term{diverges} if the length $\norm{\vec x(t)}$ grows without bound.
+  \item The fixed point $\vec 0$ is \term{stable} if trajectories that start near it converge to it, and \term{unstable} if some start arbitrarily close to it and move away.
+\end{itemize}
+\end{defn}
+
+\begin{intuition}[For linear systems, ``near'' does not matter]
+If $\vec x(t)$ is a solution of $\dot{\vec x}=M\vec x$, so is $c\,\vec x(t)$ for any number $c$ (multiply both sides by $c$). So a start at
+$(0.001,0)$ behaves exactly like a start at $(1,0)$, only scaled down by $1000$. Hence, for linear systems,
+\hl{stable $\iff$ converges from every start}, and \hl{unstable $\iff$ diverges from some start}.
+\end{intuition}
+
+\begin{example}[Two diagonal systems]
+$M=\Diag(-1,-2)$, start $(1,1)$: the equations are already decoupled, $\vec x(t)=(e^{-t},e^{-2t})$. At $t=0,1,2$: $(1,1)$, $(0.37,0.14)$, $(0.14,0.02)$. It converges: $\vec0$ is \textbf{stable}.
+
+$M=\Diag(1,-1)$, start $(1,1)$: $\vec x(t)=(e^{t},e^{-t})$: $(1,1)$, $(2.7,0.37)$, $(7.4,0.14)$. The second component dies but the first explodes: it diverges, so $\vec0$ is \textbf{unstable}.
+\end{example}
+
+\begin{defn}[Saddle]
+A \term{saddle} is a fixed point that attracts along some directions and repels along others: one eigenvalue negative, one positive.
+The name comes from a horse's saddle: from front to back it curves up, from side to side it curves down. A saddle is \textbf{unstable},
+since almost every start eventually leaves along the repelling direction. $\Diag(1,-1)$ above is a saddle, and so is our worked example.
+\end{defn}
 
 \begin{center}
 \begin{tikzpicture}[scale=0.9]
