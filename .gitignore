@@ -1,0 +1,8 @@
+# lecturers' original files stay local
+materials/
+# LaTeX build files
+*.aux
+*.log
+*.out
+*.toc
+.DS_Store

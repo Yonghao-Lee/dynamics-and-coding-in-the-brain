@@ -1,0 +1,126 @@
+% ===================================================================
+% Preamble for the Dynamics and Coding in the Brain weekly notes (copy of the shared
+% lecture-notes preamble, kept here so this folder builds on its own).
+% ===================================================================
+\documentclass[11pt,a4paper]{article}
+
+% ---------- encoding & fonts ----------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\renewcommand{\familydefault}{\rmdefault}
+\usepackage{microtype}
+
+% ---------- layout ----------
+\usepackage[a4paper,margin=2.3cm,top=2.4cm,bottom=2.6cm,headsep=0.9cm]{geometry}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\usepackage{needspace}
+\usepackage{multicol}
+\usepackage[shortlabels]{enumitem}
+\usepackage{array,booktabs,colortbl,tabularx}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+% ---------- maths ----------
+\usepackage{amsmath,amssymb,mathtools}
+
+% ---------- colours ----------
+\usepackage[dvipsnames]{xcolor}
+\definecolor{paper}{HTML}{EFE9DA}
+\definecolor{surface}{HTML}{FDFBF4}
+\definecolor{surface2}{HTML}{F1EBDB}
+\definecolor{ink}{HTML}{221C35}
+\definecolor{muted}{HTML}{6E6883}
+\definecolor{border}{HTML}{4B3C8E}
+\definecolor{shadowcol}{HTML}{2E2552}
+\definecolor{pgreen}{HTML}{1D6A3B}
+\definecolor{ppink}{HTML}{D0307A}
+\definecolor{pgold}{HTML}{8C5C0B}
+\definecolor{pcyan}{HTML}{2B5FA8}
+\pagecolor{paper}
+\color{ink}
+
+% ---------- graphics ----------
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc,shapes.geometric,shapes.misc,decorations.pathreplacing,patterns,fit,backgrounds}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\tikzset{
+  lbl/.style={font=\footnotesize,text=ink,inner sep=1pt},
+  blk/.style={draw=ink,line width=1pt,fill=surface,font=\sffamily\scriptsize\bfseries,align=center,minimum height=0.85cm,inner sep=4pt},
+  arr/.style={-{Stealth},line width=1.1pt,ink},
+  dot/.style={circle,fill=ink,inner sep=1.4pt},
+  plbl/.style={font=\ttfamily\scriptsize,text=muted,inner sep=1pt},
+  >={Stealth[length=2.6mm]}
+}
+
+% ---------- inline semantic markup ----------
+\newcommand{\term}[1]{\textcolor{pgreen}{#1}}   % newly defined term
+\newcommand{\key}[1]{\textcolor{pcyan}{#1}}     % key word / unit
+\newcommand{\hl}[1]{\textcolor{ppink}{#1}}      % the thing to remember
+\newcommand{\thd}[1]{{\color{surface}\sffamily\bfseries\footnotesize #1}} % table header cell
+\newcommand{\src}[1]{{\ttfamily\scriptsize\textcolor{muted}{[#1]}}}
+
+% ---------- boxes ----------
+\usepackage[most]{tcolorbox}
+\tcbset{
+  notebase/.style={
+    enhanced jigsaw, breakable, sharp corners,
+    colback=surface, colframe=border, boxrule=1.1pt,
+    left=6pt,right=6pt,top=5pt,bottom=5pt,
+    before skip=1.1em, after skip=1.1em,
+    shadow={1.4mm}{-1.4mm}{0mm}{fill=shadowcol},
+    fonttitle=\ttfamily\scriptsize,
+    attach boxed title to top left={xshift=3mm,yshift*=-2.4mm},
+    boxed title style={sharp corners,boxrule=0.9pt,colframe=surface,
+      left=4pt,right=4pt,top=2.5pt,bottom=2.5pt,
+      shadow={0.8mm}{-0.8mm}{0mm}{fill=shadowcol}},
+    parbox=false,
+    before upper={\setlength{\parskip}{0.45em}},
+  }
+}
+\newcommand{\boxtitle}[2]{\if\relax\detokenize{#2}\relax #1\else #1 \textperiodcentered\ \MakeUppercase{#2}\fi}
+\newcommand{\boxtitleonly}[2]{\if\relax\detokenize{#2}\relax #1\else \MakeUppercase{#2}\fi}
+
+\newtcolorbox{defn}[1][]{notebase,colbacktitle=pgreen,title={\boxtitle{DEF}{#1}}}
+\newtcolorbox{formula}[1][]{notebase,colbacktitle=border,title={\boxtitleonly{FORMULA}{#1}}}
+\newtcolorbox{intuition}[1][]{notebase,colbacktitle=ppink,title={\boxtitleonly{KEY IDEA}{#1}}}
+\newtcolorbox{example}[1][]{notebase,colbacktitle=pcyan,title={\boxtitle{EXAMPLE}{#1}}}
+\newtcolorbox{pitfall}[1][]{notebase,colbacktitle=pgold,title={\boxtitle{PITFALL}{#1}}}
+\newtcolorbox{plainbox}{notebase}
+
+% lists inside notes
+\setlist[itemize]{label={\textcolor{pgreen}{\scriptsize$\blacksquare$}},leftmargin=1.3em,itemsep=0.25em,topsep=0.3em}
+\setlist[enumerate]{label={\textcolor{pgreen}{\ttfamily\arabic*.}},leftmargin=1.6em,itemsep=0.3em,topsep=0.3em}
+
+% ---------- headings ----------
+\usepackage{titlesec}
+\newcommand{\twodigit}[1]{\ifnum#1<10 0\fi\number#1}
+\titleformat{\section}[display]
+  {\sffamily\bfseries\fontsize{20}{24}\selectfont\color{pgold}}
+  {\ttfamily\small\mdseries\color{pgreen}SECTION \twodigit{\value{section}}}
+  {8pt}{}[\vspace{4pt}{\color{border}\titlerule[1.4pt]}]
+\titlespacing*{\section}{0pt}{1.6em}{1.0em}
+\titleformat{\subsection}
+  {\ttfamily\large\color{pcyan}}{>\,\thesubsection}{0.6em}{}
+\titlespacing*{\subsection}{0pt}{1.3em}{0.5em}
+\titleformat{\subsubsection}
+  {\sffamily\bfseries\color{border}}{\thesubsubsection}{0.6em}{}
+\titlespacing*{\subsubsection}{0pt}{1.0em}{0.3em}
+
+% ---------- running header / footer ----------
+\usepackage{fancyhdr}
+\newcommand{\headleft}{}
+\newcommand{\headright}{}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyhead[L]{\ttfamily\scriptsize\textcolor{muted}{\headleft}}
+\fancyhead[R]{\ttfamily\scriptsize\textcolor{muted}{\headright}}
+\fancyfoot[C]{\tikz{\node[draw=border,line width=1pt,fill=surface,inner sep=2.5pt,font=\sffamily\footnotesize] (p) {\thepage};
+  \draw[shadowcol,line width=1.6pt] ([yshift=-2pt]p.south west)--([yshift=-2pt]p.south east);}}
+\fancypagestyle{plain}{\fancyhf{}\renewcommand{\headrulewidth}{0pt}\fancyfoot[C]{\tikz{\node[draw=border,line width=1pt,fill=surface,inner sep=2.5pt,font=\sffamily\footnotesize] (p) {\thepage};
+  \draw[shadowcol,line width=1.6pt] ([yshift=-2pt]p.south west)--([yshift=-2pt]p.south east);}}}
+
+% ---------- links ----------
+\usepackage[hidelinks]{hyperref}
