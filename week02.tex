@@ -1,9 +1,9 @@
 % ===================================================================
 % Week 02 -- Dynamics and Coding in the Brain (HUJI 769001)
-% Lecture 2: the autapse with a linear activation function, fixed points
-% and their stability.
+% Lecture 2: the autapse with a linear and with a non-linear (logistic) activation
+% function: fixed points, stability, bifurcations and bistability.
 % Reference: Loewenstein, Mongillo, Landau & Fox, The Dynamics of Computation in
-% Neuronal Networks (../tcns_book-88.pdf), sec. 2.3.1 (linear part), App. 2.A.1.
+% Neuronal Networks (../tcns_book-88.pdf), sec. 2.3.1, App. 2.A.1.
 % Build: pdflatex -interaction=nonstopmode week02.tex  (twice)
 % ===================================================================
 \input{preamble}
@@ -19,8 +19,8 @@
 % ---------------- title block ----------------
 {\ttfamily\small\color{pgreen}HUJI \textperiodcentered\ 769001 \textperiodcentered\ DYNAMICS AND CODING IN THE BRAIN}\par\vspace{6pt}
 {\sffamily\bfseries\fontsize{30}{34}\selectfont\color{pgold}Week 02}\par\vspace{4pt}
-{\sffamily\bfseries\Large\color{pgold}The Autapse: Fixed Points and Stability}\par\vspace{4pt}
-{\ttfamily\small\color{pcyan}autapse \textperiodcentered\ linear activation \textperiodcentered\ fixed point \textperiodcentered\ perturbation \textperiodcentered\ stability \textperiodcentered\ vector field}\par
+{\sffamily\bfseries\Large\color{pgold}The Autapse: Fixed Points, Stability and Bistability}\par\vspace{4pt}
+{\ttfamily\small\color{pcyan}autapse \textperiodcentered\ linear activation \textperiodcentered\ fixed point \textperiodcentered\ perturbation \textperiodcentered\ stability \textperiodcentered\ vector field \textperiodcentered\ logistic function \textperiodcentered\ bifurcation \textperiodcentered\ bistability \textperiodcentered\ memory}\par
 \vspace{0.8em}
 
 {\ttfamily\small\color{pgreen}CONTENTS}
@@ -43,6 +43,8 @@ Week 1 ended with the rate model of a network of $N$ neurons \src{LMLF eq.\ 2.8-
 Before analysing big networks, study the \hl{smallest possible network: one neuron}. If it talks to itself, it already has
 \emph{feedback}, and feedback is what makes networks interesting. This week we use it to introduce two tools we will use all course long:
 \textbf{fixed points} and their \textbf{stability}.
+We do it twice: first with a linear activation function, where everything can be solved exactly, then with a saturating one (\S\ref{sec:nonlin}),
+where the same neuron becomes \textbf{bistable} and can store a memory.
 \end{intuition}
 
 \section{The autapse}
@@ -348,6 +350,418 @@ and it cannot go below zero. This is a limitation of the linear $g$, not of the 
 by a saturating activation function \src{LMLF 2.3.1}.
 \end{pitfall}
 
+% ===================================================================
+\section{The non-linear autapse: a saturating activation function}\label{sec:nonlin}
+
+The rest of this week keeps the \emph{same} autapse, $\tau\dot r = -r + g(Jr+\hext)$, and changes only $g$. The result is
+surprising: a single neuron with strong feedback no longer explodes. Instead it gets \hl{two} stable states, and it can use them to \hl{remember} a bit of information.
+
+Two misreadings to clear up first:
+\begin{itemize}
+  \item \textbf{The non-linearity does not make the analysis hopeless.} We can no longer write down $r(t)$, but fixed points and their stability can still be found, with a picture.
+  \item \textbf{Stability is no longer a property of the whole system.} For the linear autapse, $J$ alone decided stability. Now each fixed point has \emph{its own} stability, and one neuron can have a stable and an unstable fixed point side by side.
+\end{itemize}
+
+\subsection{The logistic function}
+
+\begin{defn}[Logistic activation function]
+The \term{logistic function} \src{LMLF eq.\ 2.2} is
+\[ g(x) = \frac{1}{1+e^{-\beta(x-\theta)}}. \]
+It is \term{sigmoidal} (S-shaped): it increases monotonically, it is bounded below by $0$ (no negative rates) and above by $1$ (saturation).
+The rate $r$ is therefore \emph{normalised}: $r=1$ means ``firing at the neuron's maximal rate'', not 1\,Hz \src{LMLF 2.2}.
+\end{defn}
+
+It has two parameters:
+\begin{defn}[Threshold $\theta$ and gain $\beta$]
+\begin{itemize}
+  \item The \term{threshold} $\theta$ is the input at which the rate is exactly half its maximum: $g(\theta) = 1/(1+e^0) = 0.5$. Changing $\theta$ slides the curve left or right.
+  \item The \term{gain} $\beta$ sets how steep the curve is. Its maximal slope, reached at $x=\theta$, is $\beta/4$ (derived below).
+\end{itemize}
+\end{defn}
+
+\begin{example}[The logistic function with $\theta=0$, $\beta=20$ (the book's values)]
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{c|ccccccccc}
+$x$ & $-0.3$ & $-0.2$ & $-0.1$ & $-0.05$ & $0$ & $0.05$ & $0.1$ & $0.2$ & $0.3$\\\hline
+$g(x)$ & 0.002 & 0.018 & 0.119 & 0.269 & 0.5 & 0.731 & 0.881 & 0.982 & 0.998\\
+$g'(x)$ & 0.05 & 0.35 & 2.1 & 3.9 & 5 & 3.9 & 2.1 & 0.35 & 0.05\\
+\end{tabular}
+\end{center}
+Almost all of the change happens for $x$ between $-0.2$ and $0.2$. Outside that window the neuron is either nearly silent or nearly saturated, and the slope is close to $0$.
+\end{example}
+
+\textbf{The slope of the logistic function}, step by step (we need it for stability). Write $u = e^{-\beta(x-\theta)}$, so $g = 1/(1+u)$ and $du/dx = -\beta u$:
+\[ g'(x) = -\frac{1}{(1+u)^2}\cdot(-\beta u) = \beta\,\frac{1}{1+u}\cdot\frac{u}{1+u} = \beta\,g(x)\big(1-g(x)\big). \]
+The product $g(1-g)$ is largest when $g=\tfrac12$, i.e.\ at $x=\theta$, where it equals $\tfrac14$. So
+\begin{formula}[Slope of the logistic]
+\[ g'(x) = \beta\,g(x)\,\big(1-g(x)\big),\qquad \max_x g'(x) = g'(\theta) = \frac{\beta}{4}. \]
+\end{formula}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.62\linewidth,height=5cm,xmin=-1,xmax=1,ymin=-0.05,ymax=1.1,
+  xlabel={input $x$},ylabel={rate $g(x)$},axis lines=left,tick label style={font=\scriptsize},label style={font=\small}]
+  \addplot[pcyan,thick,domain=-1:1,samples=100]{1/(1+exp(-5*x))}; \node[font=\scriptsize,pcyan,anchor=west] at (axis cs:0.45,0.75) {$\beta=5$};
+  \addplot[pgreen,thick,domain=-1:1,samples=200]{1/(1+exp(-20*x))}; \node[font=\scriptsize,pgreen,anchor=west] at (axis cs:0.12,0.93) {$\beta=20$};
+  \addplot[pgold,thick] coordinates {(-1,0) (0,0) (0,1) (1,1)}; \node[font=\scriptsize,pgold,anchor=east] at (axis cs:-0.05,0.85) {step ($\beta\to\infty$)};
+  \addplot[muted,dashed] coordinates {(-1,0.5) (1,0.5)};
+\end{axis}
+\end{tikzpicture}
+\figcap{The logistic function with $\theta=0$ (after \src{LMLF Fig.\ 2.2a}). All curves pass through $(\theta, 0.5)$. A larger gain $\beta$ gives a steeper curve. In the limit $\beta\to\infty$ it becomes a step: $0$ below threshold, $1$ above.}
+\end{center}
+
+\subsection{The fixed-point equation}
+
+Setting $\dot r = 0$ in $\tau\dot r = -r + g(Jr+\hext)$ gives \src{LMLF eq.\ 2.17}
+\begin{formula}[Fixed points of the non-linear autapse]
+\[ r^* = g\big(Jr^* + \hext\big). \]
+\end{formula}
+
+\begin{pitfall}[You cannot solve this for $r^*$ with algebra]
+$r^*$ appears on both sides, once inside an exponential. There is no formula like $r^* = \hext/(1-J)$ any more. Do not try to isolate $r^*$.
+Instead, read the equation as a question about two curves.
+\end{pitfall}
+
+\textbf{The geometric method}, step by step:
+\begin{enumerate}
+  \item \textbf{Left side}: plot $y = r$ against $r$. This is the identity line (slope $1$).
+  \item \textbf{Right side}: plot $y = g(Jr+\hext)$ against $r$. As a function of $r$ this is \emph{again a logistic function}, with new parameters. Substitute $x = Jr+\hext$:
+        \[ \beta\big(Jr+\hext-\theta\big) = (\beta J)\Big(r - \frac{\theta-\hext}{J}\Big), \]
+        so it has \term{effective gain} $\beta J$ and \term{effective threshold} $(\theta-\hext)/J$ \src{LMLF 2.3.1}.
+  \item \textbf{Every intersection} of the two curves satisfies $r = g(Jr+\hext)$, so it is a fixed point. Counting intersections counts fixed points.
+\end{enumerate}
+
+\begin{intuition}[What $\hext$ does in the picture]
+$\hext$ appears only in the effective threshold $(\theta-\hext)/J$. Raising $\hext$ \hl{lowers the threshold, so it slides the S-curve to the left}, along the $r$ axis.
+The neuron then reaches half its maximal rate already at a smaller $r$, because the external input supplies part of the drive.
+\end{intuition}
+
+\begin{pitfall}[Left, not right]
+The book writes that increasing $\hext$ ``results in a shift of the logistic function to the right''. As a function of $r$, the curve moves to the \emph{left}: its midpoint
+$(\theta-\hext)/J$ decreases when $\hext$ grows. Check with the book's own numbers ($\theta=0$, $J=1$): the midpoint is at $r=1$ for $\hext=-1$, at $r=0.5$ for $\hext=-0.5$ and at $r=0$ for $\hext=0$.
+The figure below (and \src{LMLF Fig.\ 2.7}) shows exactly this leftward slide.
+\end{pitfall}
+
+\begin{center}
+\pgfplotsset{fpaxis/.style={scale only axis,width=0.24\linewidth,height=2.9cm,xmin=-0.1,xmax=1.15,axis lines=left,
+  tick label style={font=\tiny},label style={font=\scriptsize},title style={font=\small},xtick={0,0.5,1},xlabel={$r$}}}
+\begin{tikzpicture}
+\begin{axis}[fpaxis,ymin=-0.1,ymax=1.15,ytick={0,0.5,1},title={$\hext=-1$}]
+  \addplot[pgreen,thick,domain=-0.1:1.15,samples=200]{1/(1+exp(-20*(x-1)))};
+  \addplot[muted,dashed,domain=-0.1:1.15]{x};
+  \addplot[only marks,mark=*,mark size=2.2pt,ppink] coordinates{(0,0)};
+\end{axis}
+\end{tikzpicture}\hfill
+\begin{tikzpicture}
+\begin{axis}[fpaxis,ymin=-0.1,ymax=1.15,ytick={0,0.5,1},title={$\hext=-0.5$}]
+  \addplot[pgreen,thick,domain=-0.1:1.15,samples=200]{1/(1+exp(-20*(x-0.5)))};
+  \addplot[muted,dashed,domain=-0.1:1.15]{x};
+  \addplot[only marks,mark=*,mark size=2.2pt,ppink] coordinates{(0,0) (1,1)};
+  \addplot[only marks,mark=o,mark size=2.2pt,ppink,thick] coordinates{(0.5,0.5)};
+\end{axis}
+\end{tikzpicture}\hfill
+\begin{tikzpicture}
+\begin{axis}[fpaxis,ymin=-0.1,ymax=1.15,ytick={0,0.5,1},title={$\hext=0$}]
+  \addplot[pgreen,thick,domain=-0.1:1.15,samples=200]{1/(1+exp(-20*x))};
+  \addplot[muted,dashed,domain=-0.1:1.15]{x};
+  \addplot[only marks,mark=*,mark size=2.2pt,ppink] coordinates{(1,1)};
+\end{axis}
+\end{tikzpicture}
+
+\vspace{4pt}
+\begin{tikzpicture}
+\begin{axis}[fpaxis,ymin=-0.7,ymax=0.7,ytick={-0.5,0,0.5},ylabel={$\tau\dot r$}]
+  \addplot[pgreen,thick,domain=-0.1:1.15,samples=200]{-x+1/(1+exp(-20*(x-1)))};
+  \draw[black!60] (axis cs:-0.1,0)--(axis cs:1.15,0);
+  \draw[->,very thick,pgold] (axis cs:0.95,0)--(axis cs:0.25,0);
+  \addplot[only marks,mark=*,mark size=2.2pt,ppink] coordinates{(0,0)};
+\end{axis}
+\end{tikzpicture}\hfill
+\begin{tikzpicture}
+\begin{axis}[fpaxis,ymin=-0.7,ymax=0.7,ytick={-0.5,0,0.5}]
+  \addplot[pgreen,thick,domain=-0.1:1.15,samples=200]{-x+1/(1+exp(-20*(x-0.5)))};
+  \draw[black!60] (axis cs:-0.1,0)--(axis cs:1.15,0);
+  \draw[->,very thick,pgold] (axis cs:0.42,0)--(axis cs:0.1,0);
+  \draw[->,very thick,pgold] (axis cs:0.58,0)--(axis cs:0.9,0);
+  \addplot[only marks,mark=*,mark size=2.2pt,ppink] coordinates{(0,0) (1,0)};
+  \addplot[only marks,mark=o,mark size=2.2pt,ppink,thick] coordinates{(0.5,0)};
+\end{axis}
+\end{tikzpicture}\hfill
+\begin{tikzpicture}
+\begin{axis}[fpaxis,ymin=-0.7,ymax=0.7,ytick={-0.5,0,0.5}]
+  \addplot[pgreen,thick,domain=-0.1:1.15,samples=200]{-x+1/(1+exp(-20*x))};
+  \draw[black!60] (axis cs:-0.1,0)--(axis cs:1.15,0);
+  \draw[->,very thick,pgold] (axis cs:0.05,0)--(axis cs:0.75,0);
+  \addplot[only marks,mark=*,mark size=2.2pt,ppink] coordinates{(1,0)};
+\end{axis}
+\end{tikzpicture}
+\figcap{Redrawn after \src{LMLF Fig.\ 2.7}; $\theta=0$, $\beta=20$, $J=1$. \textbf{Top}: the S-curve $g(r+\hext)$ (green) and the identity line (dashed); the intersections are the fixed points.
+\textbf{Bottom}: the vector field $\tau\dot r = -r+g(r+\hext)$ with the direction of motion on the $r$ axis (arrows). Filled dots: stable fixed points; open dot: unstable.
+Left: one low-activity fixed point. Middle: three fixed points. Right: one high-activity fixed point.}
+\end{center}
+
+\begin{example}[Finding the fixed points for $\hext=-0.5$ by hand]
+The equation is $r^* = g(r^*-0.5)$ with $g(x) = 1/(1+e^{-20x})$.
+\begin{itemize}
+  \item \textbf{Middle}: try $r^*=0.5$. Then $g(0) = 0.5$ \checkmark. It is a fixed point exactly.
+  \item \textbf{Low}: try $r^*\approx0$. Then $g(-0.5) = 1/(1+e^{10}) \approx 4.5\times10^{-5}$. So $r^*\approx 0.000045$: the neuron is practically silent.
+  \item \textbf{High}: try $r^*\approx1$. Then $g(0.5) = 1/(1+e^{-10}) \approx 1-4.5\times10^{-5}$. So $r^*\approx0.99995$: practically saturated.
+\end{itemize}
+Each guess is then improved by plugging the result back in, but the change is in the fifth decimal place.
+\end{example}
+
+\subsection{Stability from the vector field}
+
+We read stability off the bottom row, exactly as in the linear case: arrows pointing \emph{in} mean stable, arrows pointing \emph{out} mean unstable.
+
+\begin{example}[The sign of $\tau\dot r$ for $\hext = -0.5$]
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{c|ccccccccc}
+$r$ & 0 & 0.1 & 0.25 & 0.4 & \textbf{0.5} & 0.6 & 0.75 & 0.9 & 1\\\hline
+$g(r-0.5)$ & 0.000 & 0.000 & 0.007 & 0.119 & 0.5 & 0.881 & 0.993 & 1.000 & 1.000\\
+$\tau\dot r$ & $\approx0$ & $-0.10$ & $-0.24$ & $-0.28$ & \textbf{0} & $+0.28$ & $+0.24$ & $+0.10$ & $\approx0$\\
+motion & $\bullet$ & $\leftarrow$ & $\leftarrow$ & $\leftarrow$ & $\circ$ & $\rightarrow$ & $\rightarrow$ & $\rightarrow$ & $\bullet$\\
+\end{tabular}
+\end{center}
+Between $0$ and $0.5$ the rate falls, towards $0$. Between $0.5$ and $1$ it rises, towards $1$. So $0$ and $1$ attract, and $0.5$ repels:
+it is the \hl{watershed} that decides which way the neuron goes.
+\end{example}
+
+For a single fixed point (left and right panels) the arrows point towards $r^*$ from \emph{every} starting value. For three fixed points, the outer ones attract only the
+starting values on their own side of $0.5$. The book separates these two situations \src{LMLF 2.3.1}:
+
+\begin{defn}[Global and local stability]
+\begin{itemize}
+  \item A fixed point is \term{globally stable} if the dynamics reach it from \hl{every} starting value $r\neq r^*$. Example: the only fixed point for $\hext=-1$.
+  \item It is \term{locally stable} if the dynamics reach it from every starting value \hl{close enough} to it, but not necessarily from far away.
+        Example: $r^*\approx0$ for $\hext=-0.5$. Starting at $r=0.3$ leads there, starting at $r=0.7$ does not.
+\end{itemize}
+Every globally stable fixed point is locally stable; the converse is false.
+\end{defn}
+
+\subsection{Stability by linearisation}
+
+The picture is convincing, but we also want a number, as in the linear case. The trick is to make the equation linear near the fixed point.
+
+\begin{defn}[First-order Taylor expansion]
+Near a point $a$, a smooth function is approximately a straight line: $\;f(a+\varepsilon) \approx f(a) + f'(a)\,\varepsilon\;$ for small $\varepsilon$.
+\textbf{Example}: $g(x)=1/(1+e^{-20x})$ at $a=0.1$, with $\varepsilon=0.01$. Exact: $g(0.11) = 0.9002$. Approximation: $g(0.1)+g'(0.1)\cdot0.01 = 0.8808+2.1\cdot0.01 = 0.9018$. Close, because $\varepsilon$ is small.
+\end{defn}
+
+Follow the same recipe as for the linear autapse \src{LMLF eq.\ 2.18--2.22}:
+\begin{enumerate}
+  \item \textbf{Substitute} $r = r^*+\dr$:
+        \[ \tau\frac{d}{dt}(r^*+\dr) = -(r^*+\dr) + g\big(J(r^*+\dr)+\hext\big). \]
+  \item \textbf{Name the input at the fixed point} $h^* = Jr^*+\hext$. The argument of $g$ is then $h^* + J\dr$.
+  \item \textbf{Taylor-expand} $g$ around $h^*$ with the small step $\varepsilon = J\dr$:
+        \[ g(h^*+J\dr) \approx g(h^*) + g'(h^*)\,J\dr. \]
+  \item \textbf{Regroup} (and use $\frac{d}{dt}r^*=0$):
+        \[ \tau\,\dot{\dr} = \underbrace{\big(-r^*+g(h^*)\big)}_{=\,0\ \text{(fixed point)}} - \dr + Jg'(h^*)\,\dr. \]
+  \item \textbf{Result}, with the number $\lambda = Jg'(h^*) = Jg'(Jr^*+\hext)$:
+        \[ \boxed{\ \tau\,\dot{\dr} = -(1-\lambda)\,\dr\ }\qquad\Longrightarrow\qquad \dr(t) = \dr(0)\,e^{-(1-\lambda)t/\tau}. \]
+\end{enumerate}
+
+\begin{formula}[Local stability of a fixed point of the autapse]
+\[ \lambda = J\,g'\big(Jr^*+\hext\big):\qquad \lambda<1\ \Rightarrow\ \text{stable},\qquad \lambda>1\ \Rightarrow\ \text{unstable}. \]
+\end{formula}
+
+\begin{intuition}[The same equation as before, with $J$ replaced by $\lambda$]
+Compare with $\tau\dot{\dr} = -(1-J)\dr$ for the linear autapse. Near a fixed point, the non-linear neuron behaves like a \emph{linear} autapse whose feedback strength is the
+\hl{effective feedback} $\lambda = Jg'(h^*)$: the synaptic weight times how sensitive the neuron is at its current operating point. For $g(h)=h$, $g'=1$ and $\lambda=J$: we recover the old result.
+\end{intuition}
+
+\begin{example}[$\lambda$ at the three fixed points for $\hext=-0.5$ ($J=1$, $\beta=20$, $\tau=10$\,ms)]
+Use $g' = \beta g(1-g)$ and $g(h^*) = r^*$ at a fixed point, so $\lambda = J\beta\,r^*(1-r^*)$:
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\columncolor{border}}c c c l}
+\thd{$r^*$} & \cellcolor{border}\thd{$\lambda = 20\,r^*(1-r^*)$} & \cellcolor{border}\thd{VERDICT} & \cellcolor{border}\thd{TIME SCALE $\tau/|1-\lambda|$}\\
+\rowcolor{surface} \cellcolor{border}\color{surface}$0.000045$ & $0.0009$ & stable & $\approx10$\,ms decay\\
+\rowcolor{surface2} \cellcolor{border}\color{surface}$0.5$ & $5$ & unstable & $2.5$\,ms growth\\
+\rowcolor{surface} \cellcolor{border}\color{surface}$0.99995$ & $0.0009$ & stable & $\approx10$\,ms decay\\
+\end{tabular}
+\end{center}
+At the outer fixed points the neuron is silent or saturated, so the curve is flat ($g'\approx0$): feedback does nothing and only the leak acts. At $0.5$ the curve is steepest:
+a deviation of $0.01$ grows by a factor $e$ every $2.5$\,ms.
+\end{example}
+
+\textbf{The geometric version.} $\lambda = Jg'(Jr^*+\hext) = \frac{d}{dr}\,g(Jr+\hext)\big|_{r^*}$ is the \hl{slope of the S-curve at the intersection}. The identity line has slope $1$. So:
+\begin{formula}[Stability at a glance]
+In the top-row picture, a fixed point is \textbf{stable} if the S-curve crosses the identity line \textbf{less steeply} than it (slope $<1$), and \textbf{unstable} if it crosses \textbf{more steeply} (slope $>1$).
+\end{formula}
+Look again at the figure: the single crossings (left, right) and the two outer crossings (middle) are flat; the middle crossing is steep.
+
+\subsection{Bifurcations}
+
+As $\hext$ increases smoothly from $-1$ to $0$, the number of fixed points jumps: $1\to3\to1$. This kind of event has a name \src{LMLF 2.3.1}.
+
+\begin{defn}[Bifurcation]
+A \term{bifurcation} is a \emph{qualitative} change in the dynamics (fixed points appear or disappear, or a fixed point changes its stability) caused by a \emph{smooth} change of a parameter.
+The parameter values where it happens are the \term{bifurcation points}.
+\end{defn}
+
+\begin{defn}[Saddle-node bifurcation]
+In a \term{saddle-node bifurcation} a stable and an unstable fixed point move towards each other, merge into one, and disappear (or, run backwards, are born together out of nothing).
+Both transitions of the autapse are of this type. At the moment of merging, the S-curve just \hl{touches} the identity line: the two curves are tangent.
+\end{defn}
+
+\begin{example}[Computing the two bifurcation points ($\theta=0$, $\beta=20$, $J=1$)]
+At a bifurcation point the S-curve is tangent to the identity line, so two conditions hold at once:
+\begin{enumerate}
+  \item it is a fixed point: $r^* = g(h^*)$, with $h^* = r^*+\hext$;
+  \item the slopes are equal: $\lambda = J\beta\,g(1-g) = 1$, i.e.\ $20\,r^*(1-r^*) = 1$.
+\end{enumerate}
+\textbf{Step 1.} Condition 2 is a quadratic: $r^{*2} - r^* + 0.05 = 0$, so $r^* = \tfrac12\big(1\pm\sqrt{0.8}\big)$, i.e.\ $r^* = 0.947$ or $r^* = 0.053$.\\
+\textbf{Step 2.} Invert the logistic to find the input: $g(h^*)=r^*$ gives $h^* = \frac{1}{\beta}\ln\frac{r^*}{1-r^*}$. For $r^*=0.947$: $h^* = \frac{1}{20}\ln 17.9 = 0.144$. For $r^*=0.053$: $h^*=-0.144$.\\
+\textbf{Step 3.} $\hext = h^* - Jr^*$: \;$0.144-0.947 = \mathbf{-0.803}$ \;and\; $-0.144-0.053 = \mathbf{-0.197}$.\\[2pt]
+So the autapse has three fixed points exactly for $-0.803 < \hext < -0.197$. The book's examples $\hext=-1$ (below), $-0.5$ (inside), $0$ (above) fall where they should.
+\end{example}
+
+The whole story fits in one picture: plot every fixed point against $\hext$.
+\begin{defn}[Bifurcation diagram]
+A \term{bifurcation diagram} plots the fixed points (vertical axis) against a parameter (horizontal axis). Stable fixed points are drawn solid, unstable ones dashed.
+\end{defn}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.72\linewidth,height=5.6cm,xmin=-1.2,xmax=0.2,ymin=-0.05,ymax=1.08,
+  xlabel={$\hext$},ylabel={$r^*$},axis lines=left,tick label style={font=\scriptsize},label style={font=\small},
+  xtick={-1.2,-1,-0.8,-0.6,-0.4,-0.2,0,0.2}]
+  \fill[pgreen!10] (axis cs:-0.803,-0.05) rectangle (axis cs:-0.197,1.08);
+  \addplot[pgreen,very thick,domain=-1.2:-0.1444,samples=120,variable=\s]({\s-1/(1+exp(-20*\s))},{1/(1+exp(-20*\s))});
+  \addplot[pgreen,very thick,domain=0.1444:1.2,samples=120,variable=\s]({\s-1/(1+exp(-20*\s))},{1/(1+exp(-20*\s))});
+  \addplot[pgold,very thick,dashed,domain=-0.1444:0.1444,samples=80,variable=\s]({\s-1/(1+exp(-20*\s))},{1/(1+exp(-20*\s))});
+  \draw[muted,dotted] (axis cs:-0.803,-0.05)--(axis cs:-0.803,1.08);
+  \draw[muted,dotted] (axis cs:-0.197,-0.05)--(axis cs:-0.197,1.08);
+  \node[font=\scriptsize,align=center] at (axis cs:-0.5,0.3) {bistable};
+  \node[font=\scriptsize,pgold] at (axis cs:-0.38,0.62) {unstable};
+\end{axis}
+\end{tikzpicture}
+\figcap{Bifurcation diagram, redrawn after \src{LMLF Fig.\ 2.8} ($\theta=0$, $\beta=20$, $J=1$). Solid: stable fixed points; dashed: unstable. In the shaded band, $-0.803<\hext<-0.197$,
+there are three fixed points. At each edge of the band the dashed branch merges with a solid one: a saddle-node bifurcation.}
+\end{center}
+
+\subsection{Attractors and bistability}
+
+\begin{defn}[State space and attractor]
+The \term{state space} is the set of all possible states of the system; for the autapse it is just the $r$ axis.
+An \term{attractor} is a region of state space to which all nearby trajectories converge \src{LMLF 2.3.1}. A stable fixed point is the simplest attractor; others appear later in the course.
+\end{defn}
+
+\begin{defn}[Bistability]
+A system is \term{bistable} if it has \hl{two stable fixed points} (two attractors). Between them there is always an unstable fixed point, which separates the starting values that go to one from those that go to the other.
+The autapse is bistable for $-0.803<\hext<-0.197$ (with $\theta=0$, $\beta=20$, $J=1$).
+\end{defn}
+
+\begin{example}[Where does the neuron end up? ($\hext=-0.5$, $\tau=10$\,ms)]
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{c|ccccccc}
+$t$ (ms) & 0 & 10 & 20 & 30 & 50 & 70 & 100\\\hline
+$r(0)=0.40$ & 0.40 & 0.157 & 0.058 & 0.021 & 0.003 & 0.000 & 0.000\\
+$r(0)=0.45$ & 0.45 & 0.194 & 0.072 & 0.026 & 0.004 & 0.001 & 0.000\\
+$r(0)=0.55$ & 0.55 & 0.806 & 0.928 & 0.974 & 0.996 & 0.999 & 1.000\\
+$r(0)=0.60$ & 0.60 & 0.843 & 0.942 & 0.979 & 0.997 & 1.000 & 1.000\\
+\end{tabular}
+\end{center}
+(Numerical solutions.) Starting values only $0.1$ apart end in opposite states. The final state is decided entirely by \hl{which side of $0.5$} the neuron starts on.
+\end{example}
+
+\subsection{Memory: switching with a brief input}
+
+Why care about two stable states? Because a bistable neuron can \hl{store one bit} \src{LMLF 2.3.1}. Left alone in the bistable range, it stays forever in whichever state it is in.
+To write a bit, change $\hext$ \emph{briefly}:
+
+\begin{enumerate}
+  \item The neuron rests in the low state, $\hext=-0.5$.
+  \item A brief pulse raises $\hext$ to $0$, \emph{above} the bifurcation point $-0.197$. Now the low fixed point no longer exists; the only attractor is the high one, and $r$ starts climbing.
+  \item The pulse ends: $\hext$ returns to $-0.5$. The low state exists again, but if $r$ has already passed the watershed $0.5$, it keeps going to the high state.
+  \item The neuron stays high indefinitely, although the input that put it there is long gone. That is memory.
+  \item To erase, pulse $\hext$ \emph{below} $-0.803$ (here to $-1$): the high state disappears and the neuron falls back to the low one, where it stays.
+\end{enumerate}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.82\linewidth,height=4.4cm,xmin=0,xmax=120,ymin=-0.05,ymax=1.08,
+  ylabel={$r(t)$},axis lines=left,tick label style={font=\scriptsize},label style={font=\small},xticklabels={}]
+  \addplot[pgreen,very thick] coordinates {(0,0.000) (2,0.000) (4,0.000) (6,0.000) (8,0.000) (10,0.000) (12,0.000) (14,0.000) (16,0.000) (18,0.000) (20,0.000) (22,0.138) (24,0.291) (26,0.419) (28,0.525) (30,0.611) (32,0.681) (34,0.739) (36,0.786) (38,0.824) (40,0.856) (42,0.882) (44,0.903) (46,0.921) (48,0.935) (50,0.947) (52,0.956) (54,0.964) (56,0.971) (58,0.976) (60,0.980) (62,0.984) (64,0.987) (66,0.989) (68,0.991) (70,0.993) (72,0.851) (74,0.699) (76,0.573) (78,0.469) (80,0.384) (82,0.314) (84,0.257) (86,0.211) (88,0.173) (90,0.142) (92,0.116) (94,0.095) (96,0.078) (98,0.064) (100,0.052) (102,0.043) (104,0.035) (106,0.029) (108,0.024) (110,0.019) (112,0.016) (114,0.013) (116,0.011) (118,0.009) (120,0.007)};
+  \addplot[muted,dashed] coordinates {(0,0.5) (120,0.5)};
+  \node[font=\scriptsize,muted,anchor=south west] at (axis cs:96,0.5) {watershed $0.5$};
+\end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}
+\begin{axis}[width=0.82\linewidth,height=3.2cm,xmin=0,xmax=120,ymin=-1.1,ymax=0.15,
+  xlabel={$t$ (ms)},ylabel={$\hext$},axis lines=left,tick label style={font=\scriptsize},label style={font=\small},ytick={-1,-0.5,0}]
+  \addplot[pcyan,very thick] coordinates {(0,-0.5) (20,-0.5) (20,0) (35,0) (35,-0.5) (70,-0.5) (70,-1) (85,-1) (85,-0.5) (120,-0.5)};
+\end{axis}
+\end{tikzpicture}
+\figcap{State transitions, simulated after \src{LMLF Fig.\ 2.9} ($\theta=0$, $\beta=20$, $J=1$, $\tau=10$\,ms). A 15\,ms pulse to $\hext=0$ switches the neuron on (it has reached $0.76>0.5$ when the pulse ends);
+a 15\,ms pulse to $\hext=-1$ switches it off (it has fallen to $0.23<0.5$). In between, at the same $\hext=-0.5$, the neuron is high or low depending only on its history.}
+\end{center}
+
+\begin{intuition}[The state depends on history]
+At $t=10$\,ms and at $t=60$\,ms the input is the same, $\hext=-0.5$, but the rate is $0$ in one case and $0.98$ in the other. The difference is \hl{what happened before}.
+This dependence on past input (often called \term{hysteresis}) is what lets a single neuron with feedback hold information; the book develops it into a model of long-term memory in Ch.\ 5.
+\end{intuition}
+
+\begin{pitfall}[The pulse must be long enough]
+Raising $\hext$ is not enough by itself; the rate must cross the watershed $0.5$ \emph{before} the pulse ends. With the same parameters, a 5\,ms pulse to $\hext=0$ brings $r$ only to $0.36$.
+When $\hext$ returns to $-0.5$, the rate is on the low side of $0.5$ and decays back to $0$: nothing is stored.
+\end{pitfall}
+
+\subsection{The two ingredients: positive feedback and saturation}
+
+What makes bistability possible? We need an S-curve that can cross the identity line three times. Two things are required \src{LMLF 2.3.1}:
+\begin{itemize}
+  \item \textbf{Positive feedback} that is strong enough: in the middle crossing the S-curve must be steeper than $1$. Its maximal slope is $(\beta J)/4$ (the effective gain over $4$), so we need
+        \[ \boxed{\ \frac{\beta J}{4} > 1\ }. \]
+        If this fails, the S-curve is flatter than the identity line everywhere and crosses it only once, whatever $\hext$ is. If it holds, a suitable $\hext$ produces three crossings.
+  \item \textbf{Saturation}: the curve must bend back below the identity line at high $r$ (and stay above it at low $r$). That is what the bounded logistic function provides,
+        and what the linear $g$ lacked: there, $J>1$ meant an unstable fixed point and divergence, with no second stable state to land in.
+\end{itemize}
+
+\begin{example}[How much feedback is enough? ($\beta=20$)]
+$\beta J/4 > 1 \iff J > 4/\beta = 0.2$. With the book's $J=1$: $\beta J/4 = 5$, comfortably bistable for some range of $\hext$. With $J=0.1$: $\beta J/4 = 0.5$, one fixed point for every $\hext$, no memory.
+\end{example}
+
+\begin{pitfall}[Three intersections, not two]
+The book says that the bistable regime has ``two intersection points''. It has \emph{three} intersections (fixed points), of which \emph{two} are stable. The unstable middle one is always there, between the two attractors.
+\end{pitfall}
+
+\subsection{A technical aside: the case $\lambda = 1$}
+
+The linearisation decides stability whenever $\lambda\neq1$. When $\lambda=1$ exactly, it gives $\tau\dot{\dr}=0$, which says nothing. This happens precisely at the bifurcation points, where the S-curve is tangent to the identity line.
+
+\textbf{Step 1: expand one order further} \src{LMLF eq.\ 2.23--2.25}. A second-order Taylor expansion adds the curvature term:
+\[ g(h^*+J\dr) \approx g(h^*) + g'(h^*)J\dr + \tfrac12 g''(h^*)J^2\dr^2. \]
+\textbf{Step 2: substitute}. The constant term vanishes (fixed point) and the linear term vanishes ($\lambda=1$), leaving
+\[ \tau\,\dot{\dr} = \tfrac12 J^2 g''(h^*)\,\dr^2. \]
+\textbf{Step 3: read the sign.} $\dr^2>0$ on \emph{both} sides of $r^*$, so $\dot{\dr}$ has the same sign (that of $g''$) on both sides. The flow goes towards $r^*$ on one side and away on the other.
+
+\begin{defn}[Half-stable fixed point]
+A fixed point is \term{half-stable} if the dynamics approach it from one side and leave it on the other.
+\end{defn}
+
+\textbf{Step 4: solve} (the equation is separable): $\displaystyle\frac{d\dr}{\dr^2} = c\,dt$ with $c = \frac{J^2g''(h^*)}{2\tau}$, so $-\frac{1}{\dr} = ct + \text{const}$ and
+\[ \dr(t) = \frac{1}{1/\dr(0) - c\,t}. \]
+This is \term{hyperbolic}, not exponential: much slower near the fixed point.
+
+\begin{example}[At the bifurcation point $\hext=-0.803$ ($\beta=20$, $J=1$, $\tau=10$\,ms)]
+Here $r^*=0.947$, and $g'' = \beta^2 g(1-g)(1-2g) = 400\cdot0.947\cdot0.053\cdot(-0.894) = -17.9$, so $c = -17.9/20 = -0.89$ per ms.
+\begin{itemize}
+  \item From above, $\dr(0)=+0.01$: $\dr(t) = 1/(100+0.89t)$. After $100$\,ms it is $0.0053$: only halved. (An exponential decay with $\tau=10$\,ms would have shrunk it $e^{10}\approx 22\,000$-fold.)
+  \item From below, $\dr(0)=-0.01$: $\dr(t) = 1/(-100+0.89t)$ grows in size and the approximation breaks down after about $100$\,ms; the neuron leaves towards the low state.
+\end{itemize}
+\end{example}
+
+\begin{pitfall}[Linearisation tells you only about the neighbourhood]
+Both the first- and second-order expansions are valid only while $\dr$ is small. They decide \emph{local} stability. Whether a fixed point is reached from far away (global stability) needs the full picture, such as the vector field \src{LMLF 2.3.1}.
+And $\lambda=1$ exactly is a knife-edge: the slightest change of $\hext$ makes $\lambda\neq1$, and the exponential behaviour takes over again.
+\end{pitfall}
+
 \section{Practice problems with full solutions}
 
 \begin{example}[P1: Fixed point and stability]
@@ -382,6 +796,53 @@ What happens for $J=1$, $\hext=0.5$, $\tau=10$\,ms, $r(0)=0$?
 \textbf{Solution.} $\tau\dot r = 0.5$, so $\dot r = 0.05$ per ms: $r(t)=0.05t$, a straight line. There is no fixed point; the rate grows steadily, not exponentially.
 \end{example}
 
+\subsection*{The non-linear autapse}
+
+\begin{example}[P6: Reading a logistic function]
+$g(x) = 1/(1+e^{-10(x-0.2)})$. Find $g(0.2)$, $g(0.4)$, $g(0)$ and the maximal slope.
+
+\textbf{Solution.} $\theta=0.2$, $\beta=10$. $g(0.2)=0.5$ (the threshold). $g(0.4) = 1/(1+e^{-2}) = 0.881$. $g(0) = 1/(1+e^{2}) = 0.119$ (symmetric about the threshold). Maximal slope $\beta/4 = 2.5$, at $x=0.2$.
+\end{example}
+
+\begin{example}[P7: Effective threshold]
+$\theta=0$, $J=2$. Where along the $r$ axis is the midpoint of the S-curve $g(Jr+\hext)$ for $\hext=-1$? For $\hext=-0.4$? Which way did it move?
+
+\textbf{Solution.} Midpoint $(\theta-\hext)/J$: $(0+1)/2 = 0.5$, and $(0+0.4)/2 = 0.2$. Raising $\hext$ moved it \emph{left}, from $0.5$ to $0.2$.
+\end{example}
+
+\begin{example}[P8: Stability by $\lambda$]
+$\theta=0$, $\beta=20$, $J=1$, $\hext=-0.3$. One fixed point is $r^*=0.243$; check that it is one, and decide its stability. What about $r^*\approx0.0026$?
+
+\textbf{Solution.} $g(0.243-0.3) = g(-0.057) = 1/(1+e^{1.14}) = 0.242\approx0.243$ \checkmark. $\lambda = 20\cdot0.243\cdot0.757 = 3.68>1$: unstable.
+For $r^*=0.0026$: $\lambda = 20\cdot0.0026\cdot0.9974 = 0.052<1$: stable. (The third fixed point, $r^*\approx1$, is also stable: $\hext=-0.3$ is inside the bistable band.)
+\end{example}
+
+\begin{example}[P9: Can it be bistable at all?]
+(a) $\beta=2$, $J=1$. (b) $\beta=20$, $J=0.15$. (c) $\beta=8$, $J=1$. For which can a suitable $\hext$ give two stable states?
+
+\textbf{Solution.} Test $\beta J/4>1$: (a) $0.5$, no. (b) $0.75$, no. (c) $2$, yes. In (a) and (b) the S-curve is everywhere flatter than the identity line, so it crosses it once whatever $\hext$ is.
+\end{example}
+
+\begin{example}[P10: Linear as a special case]
+Show that the stability rule $\lambda<1$ reproduces the linear autapse result.
+
+\textbf{Solution.} $g(h)=h$ has $g'=1$ everywhere, so $\lambda = J\cdot1 = J$. The rule becomes $J<1$: stable, $J>1$: unstable, exactly as in the first half of the week.
+\end{example}
+
+\begin{example}[P11: Writing a bit]
+With $\theta=0$, $\beta=20$, $J=1$, $\tau=10$\,ms, the neuron rests at the low state with $\hext=-0.5$. You can pulse $\hext$ to $0$. A 5\,ms pulse brings $r$ to $0.36$, a 15\,ms pulse to $0.76$. Which pulse stores a ``1''? Why does setting $\hext=-0.3$ forever not count as memory?
+
+\textbf{Solution.} Only the 15\,ms pulse: $0.76$ is above the unstable fixed point $0.5$ of $\hext=-0.5$, so the rate continues to the high state; $0.36$ is below it and decays back. Memory means the state persists \emph{after} the input returns to its baseline;
+a permanent change of $\hext$ is just a different input, not a stored bit.
+\end{example}
+
+\begin{example}[P12: Half-stable]
+At the bifurcation point $\hext=-0.197$ ($\beta=20$, $J=1$), $r^*=0.053$. Is $g''(h^*)$ positive or negative, and from which side is the fixed point approached?
+
+\textbf{Solution.} $g''=\beta^2g(1-g)(1-2g)$ with $g=0.053<0.5$, so $g''>0$. Then $\tau\dot{\dr} = \tfrac12J^2g''\dr^2>0$ on both sides: $r$ increases. From below ($\dr<0$) it moves up towards $r^*$; from above it moves away, up towards the high state.
+Half-stable, approached from the left.
+\end{example}
+
 \section{Cheat sheet}
 
 \begin{formula}[Week 02 on one page]
@@ -395,6 +856,21 @@ What happens for $J=1$, $\hext=0.5$, $\tau=10$\,ms, $r(0)=0$?
   \item \textbf{Full solution}: $r(t) = r^* + (r(0)-r^*)e^{-(1-J)t/\tau}$.
   \item \textbf{Vector field}: plot $\dot r$ vs.\ $r$; crossing zero going down = stable, going up = unstable.
   \item Stability = sign of the eigenvalue of the perturbation dynamics (here $-(1-J)/\tau$), as in Week 1.
+\end{itemize}
+\end{formula}
+
+\begin{formula}[The non-linear autapse on one page]
+\begin{itemize}
+  \item \textbf{Logistic} $g(x) = 1/(1+e^{-\beta(x-\theta)})$: between $0$ and $1$, $g(\theta)=0.5$, $g' = \beta g(1-g)$, maximal slope $\beta/4$. $\beta\to\infty$: a step.
+  \item \textbf{Fixed points}: $r^* = g(Jr^*+\hext)$, no closed form. Intersect the identity line with the S-curve $g(Jr+\hext)$ (effective gain $\beta J$, midpoint $(\theta-\hext)/J$; raising $\hext$ slides it left).
+  \item \textbf{Stability}: $\lambda = Jg'(Jr^*+\hext)$ = slope of the S-curve at the crossing. $\lambda<1$ stable, $\lambda>1$ unstable; $\dr(t)=\dr(0)e^{-(1-\lambda)t/\tau}$. Linear $g$: $\lambda=J$.
+  \item \textbf{Global} stability: reached from every start. \textbf{Local}: reached from nearby starts. Linearisation only tests local stability.
+  \item \textbf{Bifurcation}: qualitative change from a smooth parameter change. \textbf{Saddle-node}: a stable and an unstable fixed point merge and vanish; the curves are tangent ($\lambda=1$).
+  \item Book values $\theta=0$, $\beta=20$, $J=1$: three fixed points for $-0.803<\hext<-0.197$, otherwise one.
+  \item \textbf{Attractor}: region all nearby trajectories go to. \textbf{Bistable}: two stable fixed points, an unstable one between them as the watershed.
+  \item \textbf{Memory}: a brief pulse of $\hext$ past a bifurcation point flips the state, which persists after the pulse (the state depends on history).
+  \item \textbf{Ingredients}: positive feedback ($\beta J/4>1$) and saturation.
+  \item $\lambda=1$: second order, $\tau\dot{\dr} = \tfrac12J^2g''\dr^2$: \textbf{half-stable}, hyperbolic (slow) approach.
 \end{itemize}
 \end{formula}
 
