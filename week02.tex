@@ -2,6 +2,8 @@
 % Week 02 -- Dynamics and Coding in the Brain (HUJI 769001)
 % Lecture 2: the autapse with a linear and with a non-linear (logistic) activation
 % function: fixed points, stability, bifurcations and bistability.
+% Part B: Bonus hour 2 (materials/week02/bonus_hour_linear_algebra.pdf).
+% Part C: TA session 2 (materials/week02/Week Two TA Session.pdf), exam 2015 Q2.
 % Reference: Loewenstein, Mongillo, Landau & Fox, The Dynamics of Computation in
 % Neuronal Networks (../tcns_book-88.pdf), sec. 2.3.1, App. 2.A.1.
 % Build: pdflatex -interaction=nonstopmode week02.tex  (twice)
@@ -13,6 +15,14 @@
 \newcommand{\figcap}[1]{\par\smallskip{\small\color{muted}#1}\par}
 \newcommand{\hext}{h^{\text{ext}}}
 \newcommand{\dr}{\delta r}
+\newcommand{\Diag}{\operatorname{Diag}}
+\newcommand{\parttitle}[2]{%
+  \clearpage
+  {\ttfamily\small\color{pgreen}#1}\par\vspace{2pt}
+  {\sffamily\bfseries\fontsize{26}{30}\selectfont\color{pgold}#2}\par
+  \vspace{4pt}{\color{border}\rule{\linewidth}{1.8pt}}\par\vspace{0.6em}%
+  \addtocontents{toc}{\protect\tocpart{#1}}}
+\newcommand{\tocpart}[1]{\par\smallskip{\ttfamily\scriptsize\color{pgreen}#1}\par}
 
 \begin{document}
 
@@ -20,14 +30,25 @@
 {\ttfamily\small\color{pgreen}HUJI \textperiodcentered\ 769001 \textperiodcentered\ DYNAMICS AND CODING IN THE BRAIN}\par\vspace{6pt}
 {\sffamily\bfseries\fontsize{30}{34}\selectfont\color{pgold}Week 02}\par\vspace{4pt}
 {\sffamily\bfseries\Large\color{pgold}The Autapse: Fixed Points, Stability and Bistability}\par\vspace{4pt}
-{\ttfamily\small\color{pcyan}autapse \textperiodcentered\ linear activation \textperiodcentered\ fixed point \textperiodcentered\ perturbation \textperiodcentered\ stability \textperiodcentered\ vector field \textperiodcentered\ logistic function \textperiodcentered\ bifurcation \textperiodcentered\ bistability \textperiodcentered\ memory}\par
+{\ttfamily\small\color{pcyan}autapse \textperiodcentered\ fixed point \textperiodcentered\ stability \textperiodcentered\ logistic function \textperiodcentered\ bifurcation \textperiodcentered\ bistability \textperiodcentered\ determinant \textperiodcentered\ eigenbasis \textperiodcentered\ mutual inhibition \textperiodcentered\ $\tanh$ \textperiodcentered\ E--I network \textperiodcentered\ oscillations}\par
 \vspace{0.8em}
+
+\begin{plainbox}
+\textbf{What this week contains.} Part A: the autapse, from the book (\src{LMLF \S2.3.1}); it will be aligned with the lecture once its content is known.
+Part B: Bonus hour 2, linear algebra as geometry (determinant, eigenvectors, decoupling two inhibitory neurons, eigenvector shortcuts).
+Part C: TA session 2, exam 2015 Q2 (one excitatory population with $\tanh$; an E--I pair: trace--determinant regimes and oscillations).
+Mistakes in the bonus-hour and TA notes are corrected in pitfall boxes. Practice problems and cheat sheets close the week.
+\end{plainbox}
 
 {\ttfamily\small\color{pgreen}CONTENTS}
 \begin{multicols}{2}\footnotesize\setlength{\parskip}{0pt}
 \setcounter{tocdepth}{1}
 \makeatletter\@starttoc{toc}\makeatother
 \end{multicols}
+
+% =================================================================
+\parttitle{PART A \textperiodcentered\ LECTURE 2 (BOOK \S2.3.1)}{The Autapse}
+% =================================================================
 
 \section{Where we are}
 
@@ -762,6 +783,437 @@ Both the first- and second-order expansions are valid only while $\dr$ is small.
 And $\lambda=1$ exactly is a knife-edge: the slightest change of $\hext$ makes $\lambda\neq1$, and the exponential behaviour takes over again.
 \end{pitfall}
 
+% =================================================================
+\parttitle{PART B \textperiodcentered\ BONUS HOUR 2}{Linear Algebra as Geometry}
+% =================================================================
+
+\begin{plainbox}
+\textbf{What the bonus hour does.} It builds a geometric picture of matrices and eigenvectors, and then uses it on the lecture's network:
+linearize around a fixed point, get $\dot{\dr}=M\dr$, and decouple it by moving to the eigenvectors.
+It ends with shortcuts for finding eigenvectors without computing a characteristic polynomial.
+The bonus-hour notes have several slips (a missing minus sign, wrong factors in the final solution, a wrong eigenvalue claim). Each is corrected in a pitfall box.
+\end{plainbox}
+
+\section{Three ways to look at a matrix}
+
+A matrix $M$ (and a vector $\vec v$) can be seen as
+\begin{enumerate}
+  \item a mathematical object with rules (how to add and multiply);
+  \item a compact way to write many equations at once: $M\vec v=\vec b$ is one line instead of $n$;
+  \item \textbf{a geometric action}: $\vec v$ is an arrow from the origin, and $M$ moves every arrow of the plane to a new arrow $M\vec v$.
+\end{enumerate}
+This hour uses the third view.
+
+\section{A matrix moves the plane}
+
+\begin{example}[A diagonal matrix: stretch each axis]
+$M=\begin{pmatrix}3&0\\0&2\end{pmatrix}$, $\vec v=(1,1)$: $M\vec v=(3,2)$. Split $\vec v$ into its two axis parts:
+$M(1,0)=(3,0)$ and $M(0,1)=(0,2)$. So $M$ \hl{stretches the first axis by 3 and the second by 2}, and nothing else.
+\end{example}
+
+\begin{example}[A non-diagonal matrix: the axes get tilted]
+$M=\begin{pmatrix}3&2\\1&1\end{pmatrix}$: $M(1,1)=(5,2)$, $M(1,0)=(3,1)$, $M(0,1)=(2,1)$.
+The columns of $M$ are where the axis vectors land: $e_1\mapsto(3,1)$, $e_2\mapsto(2,1)$. Both arrows are turned, so ``stretch by how much, in which direction'' is not visible from the axes.
+\end{example}
+
+\begin{pitfall}[``$\vec v$ got stretched by 5 in one direction and by 2 in another'']
+The notes read $M(1,1)=(5,2)$ as ``stretched by 5 and by 2''. Those are only the \emph{coordinates} of the new arrow, not stretch factors.
+For this $M$ the real stretch directions are its eigenvectors, with eigenvalues $2\pm\sqrt3\approx3.73$ and $0.27$: it stretches by $3.73$ along one direction and \emph{shrinks} to $0.27$ along another.
+Its determinant is $3\cdot1-2\cdot1=1$, so the area does not change at all.
+\end{pitfall}
+
+\begin{pitfall}[The third example of the notes]
+For $M=\begin{pmatrix}\tfrac12&1\\2&\tfrac1{10}\end{pmatrix}$ the notes say ``$M$ stretches the vectors in one direction and shrinks them in another''.
+But $e_1\mapsto(\tfrac12,2)$ (length $2.06$) and $e_2\mapsto(1,\tfrac1{10})$ (length $1.005$) both get longer. The eigenvalues are $0.3\pm\sqrt{2.04}\approx1.73$ and $-1.13$:
+both have $|\lambda|>1$, so $M$ \emph{stretches} along both eigendirections (and flips one of them, since $-1.13<0$). $\det M=0.05-2=-1.95$: the area grows by $1.95$ and the orientation flips.
+\end{pitfall}
+
+\section{The determinant: how much area changes}
+
+\begin{formula}[Determinant as an area factor]
+$M$ maps the unit square to a parallelogram of area $|\det M|$. So $|\det M|$ is the factor by which \emph{every} area is multiplied.
+\begin{itemize}
+  \item $|\det M|>1$: areas grow. $|\det M|<1$: areas shrink.
+  \item $\det M<0$: the plane is also flipped (orientation reversed, like a mirror).
+  \item $\det M=0$: the plane is \hl{collapsed onto a line (or a point)}; areas become $0$, and $M$ has no inverse. (This answers the notes' question.)
+\end{itemize}
+Examples: $\Diag(3,2)$: $6$. $\begin{pmatrix}3&2\\1&1\end{pmatrix}$: $1$. $\begin{pmatrix}1&1\\1&1\end{pmatrix}$: $0$, every vector lands on the line $x_1=x_2$.
+\end{formula}
+
+\begin{pitfall}[Area, not every direction]
+``$|\det M|>1$ expands the plane'' means the \emph{area} grows. Single directions can still shrink: $\begin{pmatrix}3&2\\1&1\end{pmatrix}$ keeps the area ($\det=1$) while shrinking one direction to $0.27$ of its length and stretching another by $3.73$.
+The notes' link to the change-of-variables formula is right: in $\int f(x)\,dx$ with $x=Mu$, the factor $|\det M|$ is exactly this area (volume) factor.
+\end{pitfall}
+
+\section{Eigenvectors: the directions a matrix only stretches}
+
+\begin{defn}[Eigenvector, eigenvalue (recap of Week 1)]
+$\vec u\ne\vec0$ is an \term{eigenvector} of $M$ with \term{eigenvalue} $\lambda$ if $M\vec u=\lambda\vec u$: the arrow keeps its direction and is only multiplied by $\lambda$
+(reversed if $\lambda<0$).
+\end{defn}
+
+\begin{example}[$M=\begin{pmatrix}3&1\\2&4\end{pmatrix}$]
+The axes are tilted: $e_1\mapsto(3,2)$, $e_2\mapsto(1,4)$. Now try two special arrows:
+\[ M\begin{pmatrix}1\\-1\end{pmatrix}=\begin{pmatrix}3-1\\2-4\end{pmatrix}=2\begin{pmatrix}1\\-1\end{pmatrix},\qquad
+M\begin{pmatrix}1/2\\1\end{pmatrix}=\begin{pmatrix}3/2+1\\1+4\end{pmatrix}=\begin{pmatrix}5/2\\5\end{pmatrix}=5\begin{pmatrix}1/2\\1\end{pmatrix}. \]
+Along $(1,-1)$, $M$ stretches by $2$; along $(\tfrac12,1)$, by $5$. Check: $\det M=12-2=10=2\cdot5$ and $\operatorname{Tr}M=7=2+5$. \checkmark
+\end{example}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.62]
+  \draw[->,muted] (-2.6,0)--(6,0); \draw[->,muted] (0,-2.6)--(0,5.6);
+  \draw[pgreen,dashed] (-2.5,2.5)--(2.5,-2.5); \draw[pcyan,dashed] (-1.2,-2.4)--(2.8,5.6);
+  \draw[->,very thick,pgreen] (0,0)--(1,-1) node[below left,font=\scriptsize]{$u_1$};
+  \draw[->,very thick,pgreen!60] (0,0)--(2,-2) node[right,font=\scriptsize]{$Mu_1=2u_1$};
+  \draw[->,very thick,pcyan] (0,0)--(0.5,1) node[left,font=\scriptsize]{$u_2$};
+  \draw[->,very thick,pcyan!60] (0,0)--(2.5,5) node[right,font=\scriptsize]{$Mu_2=5u_2$};
+  \draw[->,thick,ppink] (0,0)--(3,2) node[right,font=\scriptsize]{$Me_1$};
+  \draw[->,thick,ppink] (0,0)--(1,4) node[left,font=\scriptsize]{$Me_2$};
+\end{tikzpicture}
+\figcap{$M=\begin{pmatrix}3&1\\2&4\end{pmatrix}$. The axis vectors are turned (pink). The eigenvectors stay on their own lines (dashed) and are only stretched, by $2$ and $5$.}
+\end{center}
+
+\begin{intuition}[The take-home message]
+In the standard coordinates $M$ looks complicated. In the coordinates of its eigenvectors it is just ``stretch by 2 along $u_1$, stretch by 5 along $u_2$'': a \textbf{diagonal} matrix, like the first example.
+Choosing the eigenvectors as axes (the \term{eigenbasis}) is exactly Week 1's diagonalization $M=UDU^{-1}$.
+\end{intuition}
+
+\section{From the network to $\dot{\dr}=M\dr$}
+
+The lecture's network of $N$ neurons, all inhibiting each other with strength $J>0$ (with $\tau=1$):
+\[ \dot r_i=-r_i+g\Big(-J\sum_{j=1}^Nr_j+h_0\Big),\qquad i=1,\dots,N. \]
+In one dimension we could draw $\dot r$ against $r$. In $N$ dimensions we cannot, so we \textbf{linearize}: look at a small deviation $\dr_i=r_i-r^*_i$ from a fixed point $r^*$.
+
+\textbf{Step by step.}
+\begin{enumerate}
+  \item At the fixed point, every neuron has the same input $h^*=-J\sum_jr^*_j+h_0$, and $r^*_i=g(h^*)$.
+  \item Near it, the input is $h^*-J\sum_j\dr_j$. First-order Taylor: $g\big(h^*-J\sum_j\dr_j\big)\approx g(h^*)-Jg'(h^*)\sum_j\dr_j$.
+  \item Subtract the fixed-point equation: $\dot{\dr}_i=-\dr_i-Jg'(h^*)\sum_{j=1}^N\dr_j$.
+  \item Write $\sum_j\dr_j=\mathbf1^T\dr$, with $\mathbf1=(1,\dots,1)$. The vector whose every entry is $\sum_j\dr_j$ is $\mathbf1\mathbf1^T\dr$ (every row of $\mathbf1\mathbf1^T$ is all ones).
+\end{enumerate}
+\[ \boxed{\ \dot{\dr}=M\dr,\qquad M=-I-Jg'(h^*)\,\mathbf1\mathbf1^T\ } \]
+
+\begin{pitfall}[A lost minus sign]
+The notes write $\dot{\dr}_i=-\dr_i+Jg'(h^*)\sum_j\dr_j$ and $M=-I+Jg'(h^*)\mathbf1\mathbf1^T$. The input is $-J\sum_jr_j$, so its derivative carries $-J$:
+\textbf{the correct sign is minus}. It matters: with $+$ the network would be excitatory and could become unstable; with $-$ (inhibition) every eigenvalue here is negative (\S\ref{sec:symshort}).
+Also, the notes call the $\dr_i$ ``linearly independent vectors''. They are numbers, the \emph{coordinates} of the vector $\dr$; the independent vectors are the axis vectors $e_i$.
+\end{pitfall}
+
+\section{Two inhibitory neurons, solved by decoupling}
+
+The 2-neuron example of the bonus hour (each neuron inhibits the \emph{other} with strength $a$, no self-connection):
+\[ \dot r_1=-r_1-ar_2,\qquad \dot r_2=-r_2-ar_1,\qquad\text{i.e.}\quad \dot{\vec r}=M\vec r,\quad M=\begin{pmatrix}-1&-a\\-a&-1\end{pmatrix}. \]
+The equations are \textbf{coupled}: $\dot r_1$ depends on $r_2$ and vice versa, so we cannot solve each one alone.
+
+\textbf{Step 1: the sum.} Let $r_+=r_1+r_2$. Then $\dot r_+=(-r_1-ar_2)+(-r_2-ar_1)=-(1+a)(r_1+r_2)$:
+\[ \dot r_+=-(1+a)\,r_+\quad\Rightarrow\quad r_+(t)=r_+(0)\,e^{-(1+a)t}. \]
+\textbf{Step 2: the difference.} Let $r_-=r_1-r_2$. Then $\dot r_-=(-r_1-ar_2)-(-r_2-ar_1)=-(r_1-r_2)+a(r_1-r_2)$:
+\[ \dot r_-=-(1-a)\,r_-\quad\Rightarrow\quad r_-(t)=r_-(0)\,e^{-(1-a)t}. \]
+\textbf{Step 3: back to the neurons.} $r_++r_-=2r_1$ and $r_+-r_-=2r_2$, so
+\[ \boxed{\ r_1(t)=\tfrac12\big[r_+(0)e^{-(1+a)t}+r_-(0)e^{-(1-a)t}\big],\qquad r_2(t)=\tfrac12\big[r_+(0)e^{-(1+a)t}-r_-(0)e^{-(1-a)t}\big]\ } \]
+
+\begin{pitfall}[The notes' final formulas]
+The notes write $r_++r_-=r_1$ and $r_--r_+=r_2$, and get $r_1=e^{-(1-a)t}+e^{-(1+a)t}$, $r_2=e^{-(1-a)t}-e^{-(1+a)t}$. Three problems:
+\begin{itemize}
+  \item $r_++r_-=2r_1$ and $r_+-r_-=2r_2$: a factor $\tfrac12$ is missing, and the sign of $r_2$ is reversed.
+  \item The constants $r_\pm(0)$ are missing: the notes silently took $r_+(0)=r_-(0)=1$, i.e.\ $r_1(0)=1$, $r_2(0)=0$.
+  \item Check their $r_1$ at $t=0$: $1+1=2\ne r_1(0)$. With the corrected formula and $r_1(0)=1,r_2(0)=0$: $r_1(0)=\tfrac12(1+1)=1$, $r_2(0)=0$. \checkmark
+\end{itemize}
+\end{pitfall}
+
+\begin{example}[With numbers: $a=0.5$, $r_1(0)=1$, $r_2(0)=0$]
+$r_+(0)=r_-(0)=1$. At $t=1$: $r_+=e^{-1.5}=0.223$, $r_-=e^{-0.5}=0.607$, so $r_1=\tfrac12(0.223+0.607)=0.415$ and $r_2=\tfrac12(0.223-0.607)=-0.192$.
+($r$ here is a deviation from the fixed point, so negative values are allowed.) Both modes decay; the sum decays faster ($e^{-1.5t}$) than the difference ($e^{-0.5t}$).
+\end{example}
+
+\begin{intuition}[What $r_\pm$ are: the eigenvectors]
+$r_+$ measures the state along $(1,1)$, and $r_-$ along $(1,-1)$. Indeed $M(1,1)=-(1+a)(1,1)$ and $M(1,-1)=-(1-a)(1,-1)$: these are the eigenvectors, with eigenvalues $-(1+a)$ and $-(1-a)$.
+Decoupling ``by hand'' was diagonalization all along. And it tells us the physics:
+\begin{itemize}
+  \item the \textbf{common mode} $(1,1)$ (both neurons together) always decays;
+  \item the \textbf{difference mode} $(1,-1)$ (one up, one down) decays only if $a<1$. If $a>1$ it grows: \hl{one neuron wins and silences the other} (winner-take-all).
+\end{itemize}
+In experiments we record $r_1$ and $r_2$, the neurons, so at the end we always translate back from $r_\pm$.
+\end{intuition}
+
+\section{Shortcuts for eigenvectors}\label{sec:symshort}
+
+When a matrix has a pattern, its eigenvectors have a pattern too. Three examples.
+
+\begin{formula}[1. A matrix of all ones: $\mathbf1\mathbf1^T$ ($N\times N$)]
+$(\mathbf1\mathbf1^T\vec v)_j=\sum_iv_i$ for every $j$: every entry of the result is the sum of the entries of $\vec v$. So $\mathbf1\mathbf1^T\vec v=\lambda\vec v$ means $\sum_iv_i=\lambda v_j$ for every $j$. Two cases:
+\begin{itemize}
+  \item all $v_j$ equal: $\vec v=\mathbf1$, and $\lambda=N$ (the sum of $N$ ones);
+  \item $\sum_iv_i=0$: then $\lambda=0$. There are $N-1$ independent such vectors, e.g.\ $(1,-1,0,\dots)$, $(1,0,-1,0,\dots)$.
+\end{itemize}
+Eigenvalues: $N$ (once) and $0$ ($N-1$ times). Check: the trace of $\mathbf1\mathbf1^T$ is $N=N+0+\dots+0$. \checkmark
+\end{formula}
+
+\begin{pitfall}[The notes' version]
+The notes conclude that ``the sum of all coordinates of $\vec v$ has to be that eigenvalue''. The condition is $\sum_iv_i=\lambda v_j$ for every $j$, not $\sum_iv_i=\lambda$.
+It gives exactly the two cases above.
+\end{pitfall}
+
+\begin{formula}[2. Equal row sums]
+If every row of $M$ adds up to the same number $s$, then $M\mathbf1=s\mathbf1$: \hl{$\mathbf1$ is an eigenvector with eigenvalue $s$} (each entry of $M\mathbf1$ is a row sum).
+Example: $\begin{pmatrix}-1&-a\\-a&-1\end{pmatrix}$, row sums $-1-a$: $\mathbf1=(1,1)$ with eigenvalue $-(1+a)$.
+\end{formula}
+
+\begin{formula}[3. Symmetric matrices]
+If $M=M^T$, eigenvectors with different eigenvalues are \textbf{orthogonal}: $\vec u^T\vec v=\sum_iu_iv_i=0$.
+So once you know one eigenvector of a symmetric $2\times2$ matrix, the other is perpendicular to it: from $(1,1)$ we get $(1,-1)$, with eigenvalue $-(1-a)$ in the example above.
+\end{formula}
+
+\begin{example}[All of it together: $N$ neurons inhibiting each other]
+Take $N$ neurons, each inhibiting every \emph{other} neuron with effective strength $a=Jg'(h^*)$ and no self-connection. Then $M=-I-a(\mathbf1\mathbf1^T-I)$.
+Using shortcut 1:
+\begin{itemize}
+  \item along $\mathbf1$: $-1-a(N-1)$ (the common mode, always decaying);
+  \item along any $\vec v$ with $\sum v_i=0$: $-1-a(0-1)=-1+a$ (the difference modes).
+\end{itemize}
+Stable if and only if $a<1$. For $N=2$ this gives $-(1+a)$ and $-(1-a)$, as before. \checkmark
+(If each neuron also inhibits itself, as in the lecture's $\sum_{j=1}^N$, then $M=-I-a\mathbf1\mathbf1^T$, with eigenvalues $-1-aN$ and $-1$: always stable.)
+\end{example}
+
+% =================================================================
+\parttitle{PART C \textperiodcentered\ TA SESSION 2}{Exam 2015, Question 2: Excitation and Inhibition}
+% =================================================================
+
+\begin{plainbox}
+\textbf{What the TA session does.} It solves a past exam question: fixed points and stability for (1) one excitatory population with self-excitation and
+(2) an excitatory and an inhibitory population coupled together, with $\tanh$ as the activation function. It is the Part A analysis (fixed points, linearization, slope vs.\ 1)
+plus Week 1's $2\times2$ trace--determinant test. The session stopped after part 1.2.2; that part is completed here. Slips in the TA notes are corrected in pitfall boxes.
+\end{plainbox}
+
+\section{The model and the function $\tanh$}
+
+Each population $i$ has activity $S_i(t)$ and
+\[ \dot S_i=-S_i+\tanh(h_i),\qquad h_i=\sum_jJ_{ij}S_j, \]
+where $J_{ij}$ is the connection \emph{from} population $j$ \emph{to} $i$ (time measured in units of $\tau$).
+
+\begin{defn}[Hyperbolic tangent]
+\[ \tanh x=\frac{\sinh x}{\cosh x}=\frac{e^x-e^{-x}}{e^x+e^{-x}},\qquad \sinh x=\frac{e^x-e^{-x}}2,\quad\cosh x=\frac{e^x+e^{-x}}2. \]
+\end{defn}
+
+\begin{formula}[What we need about $\tanh$]
+\begin{itemize}
+  \item It is an S-curve from $-1$ to $1$: $\tanh0=0$, $\tanh x\to\pm1$ as $x\to\pm\infty$. It is \textbf{odd}: $\tanh(-x)=-\tanh x$.
+  \item Derivative: $\tanh'x=1-\tanh^2x$. So $\tanh'0=1$: near $0$, $\tanh x\approx x$.
+  \item For $x>0$: $\tanh x<x$, and $\tanh$ is concave (bends down).
+\end{itemize}
+Numbers: $\tanh0.5=0.462$, $\tanh1=0.762$, $\tanh2=0.964$.
+\end{formula}
+
+\textbf{Why $\tanh'=1-\tanh^2$:} quotient rule with $\sinh'=\cosh$, $\cosh'=\sinh$: $\tanh'=\dfrac{\cosh^2-\sinh^2}{\cosh^2}=1-\tanh^2$.
+
+\begin{intuition}[$\tanh$ vs.\ the logistic function of Part A]
+$\tanh x=2\sigma(2x)-1$, where $\sigma(x)=1/(1+e^{-x})$: the same S-shape, shifted and rescaled to the range $(-1,1)$. Because $S$ can be negative, it is best read as a
+\emph{deviation} from a baseline rate. (The TA's remark: today one prefers non-negative activation functions, since a firing rate cannot be negative.)
+\end{intuition}
+
+\section{Question 1.1: one excitatory population}
+
+\begin{center}
+\begin{tikzpicture}
+  \node[draw=ink,fill=ppink!70,minimum size=0.8cm,font=\sffamily\bfseries] (E) at (0,0) {E};
+  \draw[thick,->] (E.north east) .. controls +(0.7,0.9) and +(-0.7,0.9) .. (E.north west) node[pos=0.5,above,font=\small]{$J$};
+\end{tikzpicture}
+\figcap{One excitatory population exciting itself with strength $J>0$ (the TA's Figure 1).}
+\end{center}
+
+\textbf{Question.} $\dot S=-S+\tanh(JS)$, $J>0$. Find the fixed points and their stability as a function of $J$.
+
+\subsection{Fixed points}
+\begin{enumerate}
+  \item Fixed point: $\dot S=0\iff S=\tanh(JS)$. There is no closed-form solution, so \textbf{draw both sides}: the identity line $y=S$ and the S-curve $y=\tanh(JS)$. Every crossing is a fixed point.
+  \item $S^*=0$ always works: $\tanh(J\cdot0)=0$.
+  \item The S-curve's slope at $0$ is $J\tanh'(0)=J$.
+        \begin{itemize}
+          \item $J\le1$: for $S>0$, $\tanh(JS)<JS\le S$, so the curve is below the line: no other crossing. \textbf{One fixed point}, $S^*=0$.
+          \item $J>1$: just right of $0$ the curve is above the line (slope $J>1$), but it never exceeds $1$ while the line keeps rising. So they cross exactly once more, at some $S^*\in(0,1)$; by oddness also at $-S^*$. \textbf{Three fixed points}: $-S^*,0,S^*$.
+        \end{itemize}
+\end{enumerate}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=6.4cm,height=5.2cm,axis lines=middle,xmin=-1.6,xmax=1.6,ymin=-1.3,ymax=1.3,xtick={-1,1},ytick={-1,1},
+  axis on top=false,clip=false,xlabel={$S$},every axis label/.style={font=\footnotesize},tick label style={font=\scriptsize},title={\footnotesize $J=0.5$: one crossing}]
+  \addplot[muted,thick,domain=-1.4:1.4]{x};
+  \addplot[pcyan,very thick,domain=-1.6:1.6,samples=80]{tanh(0.5*x)};
+  \addplot[only marks,mark=*,mark size=3pt,pgreen,draw=ink] coordinates {(0,0)};
+\end{axis}
+\end{tikzpicture}\quad
+\begin{tikzpicture}
+\begin{axis}[width=6.4cm,height=5.2cm,axis lines=middle,xmin=-1.6,xmax=1.6,ymin=-1.3,ymax=1.3,xtick={-1,1},ytick={-1,1},
+  axis on top=false,clip=false,xlabel={$S$},every axis label/.style={font=\footnotesize},tick label style={font=\scriptsize},title={\footnotesize $J=2$: three crossings}]
+  \addplot[muted,thick,domain=-1.4:1.4]{x};
+  \addplot[pcyan,very thick,domain=-1.6:1.6,samples=80]{tanh(2*x)};
+  \addplot[only marks,mark=*,mark size=2pt,pgreen] coordinates {(-0.9575,-0.9575) (0.9575,0.9575)};
+  \addplot[only marks,mark=*,mark size=3pt,fill=white,draw=ppink,thick] coordinates {(0,0)};
+\end{axis}
+\end{tikzpicture}
+\figcap{Grey: $y=S$. Blue: $y=\tanh(JS)$. Filled green = stable, open pink = unstable (shown below). For $J=2$ the outer crossings are at $\pm0.9575$.}
+\end{center}
+
+\subsection{Stability, step by step}
+\begin{enumerate}
+  \item Perturb: $S=S^*+\delta S$. Then $\dot{\delta S}=-(S^*+\delta S)+\tanh(JS^*+J\delta S)$.
+  \item First-order Taylor: $\tanh(JS^*+J\delta S)\approx\tanh(JS^*)+J\big(1-\tanh^2(JS^*)\big)\delta S$.
+  \item $-S^*+\tanh(JS^*)=0$ (fixed point), so $\dot{\delta S}=\lambda\,\delta S$ with
+        \[ \lambda=-1+J\big(1-\tanh^2(JS^*)\big)=\boxed{-1+J\big(1-S^{*2}\big)}, \]
+        using $\tanh(JS^*)=S^*$ once more.
+  \item $\delta S(t)=\delta S(0)e^{\lambda t}$: \textbf{stable if $\lambda<0$}, unstable if $\lambda>0$. Equivalently: the S-curve's slope at the crossing, $J(1-S^{*2})$, must be \textbf{less than 1}, the slope of the identity line (the same rule as Part A, \S\ref{sec:nonlin}).
+\end{enumerate}
+
+\textbf{Reading off the cases.}
+\begin{itemize}
+  \item $S^*=0$: $\lambda=J-1$. Stable for $J<1$, \textbf{unstable for $J>1$}.
+  \item $S^*=\pm S^*\ne0$ (only for $J>1$): $\lambda=-1+J(1-S^{*2})<0$, \textbf{stable}. (Proof in the box below; the two have the same $\lambda$ because $S^{*2}$ is the same.)
+  \item $J=1$: $\lambda=0$ at $S^*=0$, so the linearization is silent. But $\tanh S<S$ for $S>0$, so $\dot S=-S+\tanh S<0$ for $S>0$ and $>0$ for $S<0$: the flow points to $0$ from both sides. Stable, though slowly ($\dot S\approx-S^3/3$).
+\end{itemize}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\columncolor{border}}c c c c}
+\thd{$J$} & \cellcolor{border}\thd{$S^*>0$} & \cellcolor{border}\thd{SLOPE $J(1-S^{*2})$} & \cellcolor{border}\thd{$\lambda$}\\
+\rowcolor{surface}\cellcolor{border}\color{surface}1.2 & 0.659 & 0.680 & $-0.32$\\
+\rowcolor{surface2}\cellcolor{border}\color{surface}1.5 & 0.859 & 0.394 & $-0.61$\\
+\rowcolor{surface}\cellcolor{border}\color{surface}2 & 0.958 & 0.166 & $-0.83$\\
+\rowcolor{surface2}\cellcolor{border}\color{surface}3 & 0.995 & 0.031 & $-0.97$\\
+\end{tabular}
+\end{center}
+
+\begin{formula}[Why the outer fixed points are always stable]
+Let $u=JS^*>0$. The fixed-point equation says $\tanh u=S^*$, so $\dfrac{\tanh u}{u}=\dfrac1J$. We need $J(1-\tanh^2u)<1$, i.e.\ $1-\tanh^2u<\dfrac{\tanh u}{u}$.
+Multiply by $u\cosh^2u>0$: this is $u<\sinh u\cosh u=\tfrac12\sinh2u$, i.e.\ $\sinh2u>2u$, which holds for every $u>0$ ($\sinh y>y$ for $y>0$). \checkmark
+\end{formula}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=8.5cm,height=5.4cm,axis lines=middle,xmin=0,xmax=3.2,ymin=-1.2,ymax=1.2,xtick={1,2,3},ytick={-1,1},
+  xlabel={$J$},ylabel={$S^*$},every axis label/.style={font=\footnotesize},tick label style={font=\scriptsize}]
+  \addplot[pgreen,very thick,domain=0:1]{0};
+  \addplot[ppink,very thick,dashed,domain=1:3.2]{0};
+  \addplot[pgreen,very thick,domain=0.02:0.996,samples=80,variable=t] ({0.5*ln((1+t)/(1-t))/t},{t});
+  \addplot[pgreen,very thick,domain=0.02:0.996,samples=80,variable=t] ({0.5*ln((1+t)/(1-t))/t},{-t});
+\end{axis}
+\end{tikzpicture}
+\figcap{Fixed points against $J$ (a \term{pitchfork bifurcation}). Solid = stable, dashed = unstable. At $J=1$ the single stable state $0$ becomes unstable and two new stable states $\pm S^*$ appear.}
+\end{center}
+
+\begin{intuition}[The same lesson as Part A]
+Strong enough positive feedback ($J>1$) plus saturation gives \textbf{two stable states}: the population can sit ``high'' or ``low'' and stays there. That is bistability, a memory, exactly as for the logistic autapse.
+\end{intuition}
+
+\begin{pitfall}[Corrections to the TA notes, 1.1]
+\begin{itemize}
+  \item ``$\tanh^2(S)>0$, so $1-\tanh^2(S)<1$ always'': $\tanh^2(0)=0$, so it is $\ge0$ and $1-\tanh^2\le1$.
+  \item ``$-1+J>-1+1>0$'': should read $-1+J>-1+1=0$.
+  \item The comparison ``$1\lessgtr J(1-\tanh^2(0))$'' for the \emph{outer} fixed points should be at $JS^*$: $1\lessgtr J(1-\tanh^2(JS^*))$. And it compares the slope of $S$ with the slope of $\tanh(JS)$, not of ``$\tanh^2(JS)$''.
+  \item The conclusion (outer points stable) is right, but the notes only read it off a picture. The box above proves it.
+\end{itemize}
+\end{pitfall}
+
+\section{Question 1.2: an excitatory and an inhibitory population}
+
+\begin{center}
+\begin{tikzpicture}
+  \node[draw=ink,fill=ppink!70,minimum size=0.8cm,font=\sffamily\bfseries] (E) at (0,1.6) {E};
+  \node[draw=ink,fill=pcyan!60,minimum size=0.8cm,font=\sffamily\bfseries] (I) at (0,0) {I};
+  \draw[thick,->] (E.north east) .. controls +(0.7,0.9) and +(-0.7,0.9) .. (E.north west) node[pos=0.5,above,font=\small]{$+J$};
+  \draw[thick,->] (I.south west) .. controls +(-0.7,-0.9) and +(0.7,-0.9) .. (I.south east) node[pos=0.5,below,font=\small]{$-J$};
+  \draw[thick,->] (E.south west) to[bend right=35] node[left,font=\small]{$+K$} (I.north west);
+  \draw[thick,->] (I.north east) to[bend right=35] node[right,font=\small]{$-K$} (E.south east);
+\end{tikzpicture}
+\figcap{The TA's Figure 2 ($J,K>0$): E excites itself ($+J$) and I ($+K$); I inhibits itself ($-J$) and E ($-K$).}
+\end{center}
+
+Reading the input from the figure (``from $j$ to $i$''):
+\[ \dot S_E=-S_E+\tanh(JS_E-KS_I),\qquad \dot S_I=-S_I+\tanh(KS_E-JS_I). \]
+
+\subsection*{1.2.1: $(0,0)$ is a fixed point; its stability}
+\begin{enumerate}
+  \item At $(0,0)$ both inputs are $0$ and $\tanh0=0$: $\dot S_E=\dot S_I=0$. \checkmark
+  \item Linearize. Near $0$, $\tanh x\approx x$ (slope $1$), so
+        \[ \dot{\delta S_E}\approx-\delta S_E+J\delta S_E-K\delta S_I,\qquad \dot{\delta S_I}\approx-\delta S_I+K\delta S_E-J\delta S_I. \]
+        (The same as taking the four partial derivatives, e.g.\ $\partial\dot S_E/\partial S_E=-1+J(1-\tanh^2(\cdot))$, and setting $S_E=S_I=0$.)
+  \item In matrix form:
+        \[ \begin{pmatrix}\dot{\delta S_E}\\\dot{\delta S_I}\end{pmatrix}=A\begin{pmatrix}\delta S_E\\\delta S_I\end{pmatrix},\qquad A=\begin{pmatrix}J-1&-K\\K&-J-1\end{pmatrix}. \]
+  \item Week 1's $2\times2$ test: $\operatorname{Tr}A=(J-1)+(-J-1)=-2<0$ always, and
+        $\det A=(J-1)(-J-1)-(-K)(K)=1-J^2+K^2$.
+  \item Stable $\iff\operatorname{Tr}<0$ and $\det>0\iff K^2+1>J^2\iff\boxed{J<\sqrt{K^2+1}}$ (as $J>0$).
+\end{enumerate}
+
+\textbf{The eigenvalues themselves} (useful for 1.2.2). $\lambda^2-\operatorname{Tr}\,\lambda+\det=\lambda^2+2\lambda+(1-J^2+K^2)=0$, so
+\[ \boxed{\ \lambda_\pm=-1\pm\sqrt{J^2-K^2}\ } \]
+
+\subsection*{1.2.2: the qualitatively different behaviours}
+
+\begin{defn}[Complex eigenvalues mean oscillations]
+If $\lambda=\alpha\pm i\omega$, the solutions contain $e^{\lambda t}=e^{\alpha t}(\cos\omega t\pm i\sin\omega t)$: a rotation at angular frequency $\omega$ whose size changes like $e^{\alpha t}$.
+$\alpha<0$: \term{damped oscillation} (the state spirals into the fixed point, a \term{stable spiral}). $\alpha>0$: growing oscillation.
+The eigenvalues are complex exactly when $\operatorname{Tr}^2-4\det<0$.
+\end{defn}
+
+Here $\operatorname{Tr}^2-4\det=4-4(1-J^2+K^2)=4(J^2-K^2)$. So everything depends on comparing $J$ with $K$, and $J$ with $\sqrt{K^2+1}$:
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{>{\columncolor{border}}l l L{5.6cm}}
+\thd{REGIME} & \cellcolor{border}\thd{EIGENVALUES} & \cellcolor{border}\thd{BEHAVIOUR NEAR $(0,0)$}\\
+\rowcolor{surface}\cellcolor{border}\color{surface}$J<K$ & $-1\pm i\sqrt{K^2-J^2}$ & stable spiral: \textbf{damped oscillations}, frequency $\sqrt{K^2-J^2}$, decay $e^{-t}$\\
+\rowcolor{surface2}\cellcolor{border}\color{surface}$J=K$ & $-1$ (twice) & stable, decays like $e^{-t}$, no oscillation\\
+\rowcolor{surface}\cellcolor{border}\color{surface}$K<J<\sqrt{K^2+1}$ & two real, both $<0$ & stable node: decays without oscillating\\
+\rowcolor{surface2}\cellcolor{border}\color{surface}$J=\sqrt{K^2+1}$ & $0$ and $-2$ & borderline: one decaying direction, one neutral; linearization undecided\\
+\rowcolor{surface}\cellcolor{border}\color{surface}$J>\sqrt{K^2+1}$ & one $>0$, one $<0$ & saddle: \textbf{unstable}, activity runs away along one direction (until $\tanh$ saturates)\\
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=8cm,height=6.2cm,axis lines=left,xmin=0,xmax=3,ymin=0,ymax=3,xlabel={$J$ (self-coupling)},ylabel={$K$ (E--I coupling)},
+  every axis label/.style={font=\footnotesize},tick label style={font=\scriptsize}]
+  \addplot[pcyan!25,fill=pcyan!25,draw=none,domain=0:3] {3} \closedcycle;
+  \addplot[pgreen!25,fill=pgreen!25,draw=none,domain=0:3] {x} \closedcycle;
+  \addplot[ppink!30,fill=ppink!30,draw=none,domain=1:3,samples=60] {sqrt(max(x^2-1,0))} \closedcycle;
+  \addplot[ink,thick,domain=0:3]{x};
+  \addplot[ink,thick,domain=1:3,samples=60]{sqrt(max(x^2-1,0))};
+  \node[font=\scriptsize,align=center] at (axis cs:0.75,2.3) {stable spiral\\(oscillations)};
+  \node[font=\scriptsize,align=center] at (axis cs:0.72,0.28) {stable node};
+  \node[font=\scriptsize,align=center] at (axis cs:2.5,0.8) {saddle\\(unstable)};
+  \node[font=\scriptsize,rotate=40] at (axis cs:2.3,2.45) {$K=J$};
+  \node[font=\scriptsize,rotate=38] at (axis cs:2.55,2.05) {$J=\sqrt{K^2+1}$};
+\end{axis}
+\end{tikzpicture}
+\figcap{The three regimes of $(0,0)$ in the $(J,K)$ plane. Above $K=J$: oscillations. Between the two curves: plain decay. Right of $J=\sqrt{K^2+1}$: unstable.}
+\end{center}
+
+\begin{example}[One point in each region]
+\begin{itemize}
+  \item $J=1$, $K=2$: $\lambda=-1\pm i\sqrt3$. Damped oscillation with period $2\pi/\sqrt3\approx3.6$ time units.
+  \item $J=1.2$, $K=1$: $\lambda=-1\pm\sqrt{0.44}=-0.34,\,-1.66$ (check: $\det=1-1.44+1=0.56=0.34\cdot1.66$). Stable node.
+  \item $J=2$, $K=1$: $\lambda=-1\pm\sqrt3=0.73,\,-2.73$ ($\det=-2<0$). Saddle: unstable.
+\end{itemize}
+\end{example}
+
+\begin{intuition}[Why the E--I loop oscillates]
+E excites I, and I then inhibits E; with E low, I loses its drive and falls, which releases E, and so on. That is a rotation in the $(S_E,S_I)$ plane. The loop strength $K$ drives the rotation; the self-coupling $J$ pushes the two populations apart in opposite directions (E amplifies itself, I damps itself).
+When $K>J$ the rotation wins: oscillations. When $J$ is too large compared with $K$, self-excitation of E wins: instability.
+\end{intuition}
+
+\begin{pitfall}[Corrections to the TA notes, 1.2]
+\begin{itemize}
+  \item ``We can check for oscillations by looking at $p-4q$'': the discriminant is $p^2-4q$ (trace squared). Here $p^2-4q=4(J^2-K^2)$: oscillations iff $K>J$.
+  \item ``For the fixed point to be stable we need all eigenvalues to be negative'': for complex eigenvalues, read ``negative \emph{real part}''. Here the real part is $-1$ whenever $K>J$, so those cases are always stable.
+  \item ``If $J=\sqrt{K^2+1}$ we have one stable direction'': true (eigenvalue $-2$), but the other eigenvalue is $0$, so the linear analysis cannot decide stability there.
+  \item The notes stop at 1.2.2 without listing the regimes; the table and the figure above complete it.
+\end{itemize}
+\end{pitfall}
+
+% =================================================================
+\parttitle{WEEK 02}{Practice Problems and Summary}
+% =================================================================
+
 \section{Practice problems with full solutions}
 
 \begin{example}[P1: Fixed point and stability]
@@ -843,6 +1295,50 @@ At the bifurcation point $\hext=-0.197$ ($\beta=20$, $J=1$), $r^*=0.053$. Is $g'
 Half-stable, approached from the left.
 \end{example}
 
+
+\subsection*{Bonus hour and TA session problems}
+
+\begin{example}[P-B1: Eigenvectors without a polynomial]
+$M=\begin{pmatrix}2&1\\1&2\end{pmatrix}$. Find its eigenvectors and eigenvalues with the shortcuts, and its area factor.
+
+\textbf{Solution.} Equal row sums $3$: $\mathbf1=(1,1)$ with $\lambda=3$. Symmetric, so the other eigenvector is perpendicular: $(1,-1)$, and $M(1,-1)=(1,-1)$, so $\lambda=1$.
+Area factor $|\det M|=4-1=3=3\cdot1$. \checkmark
+\end{example}
+
+\begin{example}[P-B2: Three neurons inhibiting each other]
+Three neurons, each inhibiting the other two with effective strength $a$ (no self-connection): $M=-I-a(\mathbf1\mathbf1^T-I)$. Find the eigenvalues for $a=0.4$ and for $a=1.5$. Stable?
+
+\textbf{Solution.} Common mode $\mathbf1$: $-1-a(N-1)=-1-2a$. Difference modes (sum zero, twice): $-1+a$.
+$a=0.4$: $-1.8$, $-0.6$, $-0.6$: stable. $a=1.5$: $-4$, $0.5$, $0.5$: unstable; the difference modes grow, so some neurons win and silence the others.
+\end{example}
+
+\begin{example}[P-B3: Winner-take-all]
+Two neurons, $\dot r_1=-r_1-2r_2$, $\dot r_2=-r_2-2r_1$, start at $r_1(0)=1.1$, $r_2(0)=0.9$. Find $r_1(t)$, $r_2(t)$ and describe them at $t=2$.
+
+\textbf{Solution.} $a=2$. $r_+(0)=2$, $r_-(0)=0.2$. $r_+=2e^{-3t}$, $r_-=0.2e^{t}$.
+$r_1=\tfrac12(2e^{-3t}+0.2e^{t})$, $r_2=\tfrac12(2e^{-3t}-0.2e^{t})$. At $t=2$: $r_+=0.005$, $r_-=1.478$, so $r_1\approx0.74$, $r_2\approx-0.74$.
+A $10\%$ head start of neuron 1 has grown: neuron 1 wins (in a real network, until saturation).
+\end{example}
+
+\begin{example}[P-C1: Stability of an outer fixed point]
+For $\dot S=-S+\tanh(1.5S)$, the positive fixed point is $S^*=0.859$. Find $\lambda$ there and at $S^*=0$.
+
+\textbf{Solution.} $\lambda=-1+J(1-S^{*2})=-1+1.5(1-0.738)=-1+0.394=-0.61<0$: stable. At $0$: $\lambda=J-1=0.5>0$: unstable.
+\end{example}
+
+\begin{example}[P-C2: An oscillating E--I pair]
+In Question 1.2 take $J=0.5$, $K=1$. Classify $(0,0)$ and give the oscillation period.
+
+\textbf{Solution.} $\operatorname{Tr}=-2$, $\det=1-0.25+1=1.75>0$: stable. $J<K$: $\lambda=-1\pm i\sqrt{1-0.25}=-1\pm0.866i$, a stable spiral.
+Period $2\pi/0.866\approx7.3$ time units; the amplitude shrinks like $e^{-t}$, so only about one visible turn.
+\end{example}
+
+\begin{example}[P-C3: Ranges]
+With $K=1$ in Question 1.2, for which $J>0$ is $(0,0)$ stable, and for which does it oscillate?
+
+\textbf{Solution.} Stable iff $J<\sqrt{K^2+1}=\sqrt2\approx1.41$. Oscillating iff $J<K=1$. So: $0<J<1$ stable spiral; $J=1$ stable, no oscillation; $1<J<1.41$ stable node; $J>1.41$ saddle.
+\end{example}
+
 \section{Cheat sheet}
 
 \begin{formula}[Week 02 on one page]
@@ -871,6 +1367,26 @@ Half-stable, approached from the left.
   \item \textbf{Memory}: a brief pulse of $\hext$ past a bifurcation point flips the state, which persists after the pulse (the state depends on history).
   \item \textbf{Ingredients}: positive feedback ($\beta J/4>1$) and saturation.
   \item $\lambda=1$: second order, $\tau\dot{\dr} = \tfrac12J^2g''\dr^2$: \textbf{half-stable}, hyperbolic (slow) approach.
+\end{itemize}
+\end{formula}
+
+\begin{formula}[Bonus hour 2 on one page]
+\begin{itemize}
+  \item A matrix moves the plane: its columns are the images of $e_1,e_2$. $|\det M|$ = area factor; $\det<0$ flips; $\det=0$ collapses onto a line.
+  \item Eigenvector: $M\vec u=\lambda\vec u$, a direction only stretched. In the eigenbasis $M$ is diagonal ($M=UDU^{-1}$).
+  \item Network linearization: $\dot r_i=-r_i+g(-J\sum_jr_j+h_0)\Rightarrow\dot{\dr}=\big(-I-Jg'(h^*)\mathbf1\mathbf1^T\big)\dr$ (minus sign!).
+  \item Two mutually inhibiting neurons: $r_\pm=r_1\pm r_2$, $\dot r_+=-(1+a)r_+$, $\dot r_-=-(1-a)r_-$; $r_{1,2}=\tfrac12(r_+\pm r_-)$. $a>1$: winner-take-all.
+  \item $\mathbf1\mathbf1^T$: eigenvalue $N$ on $\mathbf1$, $0$ on sum-zero vectors. Equal row sums $s$: $M\mathbf1=s\mathbf1$. Symmetric: orthogonal eigenvectors.
+\end{itemize}
+\end{formula}
+
+\begin{formula}[TA session 2 on one page]
+\begin{itemize}
+  \item $\tanh$: odd, range $(-1,1)$, $\tanh'=1-\tanh^2$, $\tanh'0=1$, $\tanh x<x$ for $x>0$.
+  \item $\dot S=-S+\tanh(JS)$: $J\le1$ one fixed point $0$ (stable); $J>1$ three: $0$ unstable, $\pm S^*$ stable (pitchfork at $J=1$).
+  \item Stability: $\lambda=-1+J(1-S^{*2})$; stable iff the S-curve crosses the identity with slope $<1$.
+  \item E--I pair: $A=\begin{pmatrix}J-1&-K\\K&-J-1\end{pmatrix}$, $\operatorname{Tr}=-2$, $\det=1-J^2+K^2$, $\lambda=-1\pm\sqrt{J^2-K^2}$.
+  \item Stable iff $J<\sqrt{K^2+1}$. Oscillations iff $\operatorname{Tr}^2-4\det<0\iff K>J$ (damped, frequency $\sqrt{K^2-J^2}$). $J>\sqrt{K^2+1}$: saddle.
 \end{itemize}
 \end{formula}
 
