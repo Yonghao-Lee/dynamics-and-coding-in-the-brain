@@ -1,7 +1,8 @@
 % ===================================================================
 % Week 02 -- Dynamics and Coding in the Brain (HUJI 769001)
 % Lecture 2: the autapse with a linear and with a non-linear (logistic) activation
-% function: fixed points, stability, bifurcations and bistability.
+% function: fixed points, stability and bifurcations (the lecture stopped before attractors;
+% the attractor/bistability/memory material waits in drafts/week03_carryover.tex).
 % Part B: Bonus hour 2 (materials/week02/bonus_hour_linear_algebra.pdf).
 % Part C: TA session 2 (materials/week02/Week Two TA Session.pdf), exam 2015 Q2.
 % Reference: Loewenstein, Mongillo, Landau & Fox, The Dynamics of Computation in
@@ -29,12 +30,12 @@
 % ---------------- title block ----------------
 {\ttfamily\small\color{pgreen}HUJI \textperiodcentered\ 769001 \textperiodcentered\ DYNAMICS AND CODING IN THE BRAIN}\par\vspace{6pt}
 {\sffamily\bfseries\fontsize{30}{34}\selectfont\color{pgold}Week 02}\par\vspace{4pt}
-{\sffamily\bfseries\Large\color{pgold}The Autapse: Fixed Points, Stability and Bistability}\par\vspace{4pt}
-{\ttfamily\small\color{pcyan}autapse \textperiodcentered\ fixed point \textperiodcentered\ stability \textperiodcentered\ logistic function \textperiodcentered\ bifurcation \textperiodcentered\ bistability \textperiodcentered\ determinant \textperiodcentered\ eigenbasis \textperiodcentered\ mutual inhibition \textperiodcentered\ $\tanh$ \textperiodcentered\ E--I network \textperiodcentered\ oscillations}\par
+{\sffamily\bfseries\Large\color{pgold}The Autapse: Fixed Points, Stability and Bifurcations}\par\vspace{4pt}
+{\ttfamily\small\color{pcyan}autapse \textperiodcentered\ fixed point \textperiodcentered\ stability \textperiodcentered\ logistic function \textperiodcentered\ bifurcation \textperiodcentered\ determinant \textperiodcentered\ eigenbasis \textperiodcentered\ mutual inhibition \textperiodcentered\ $\tanh$ \textperiodcentered\ E--I network \textperiodcentered\ oscillations}\par
 \vspace{0.8em}
 
 \begin{plainbox}
-\textbf{What this week contains.} Part A: the autapse, from the book (\src{LMLF \S2.3.1}); it will be aligned with the lecture once its content is known.
+\textbf{What this week contains.} Part A: Lecture 2, the autapse (\src{LMLF \S2.3.1}), up to bifurcations. The lecture stopped just before attractors; bistability and memory are in Week 3.
 Part B: Bonus hour 2, linear algebra as geometry (determinant, eigenvectors, decoupling two inhibitory neurons, eigenvector shortcuts).
 Part C: TA session 2, exam 2015 Q2 (one excitatory population with $\tanh$; an E--I pair: trace--determinant regimes and oscillations).
 Mistakes in the bonus-hour and TA notes are corrected in pitfall boxes. Practice problems and cheat sheets close the week.
@@ -65,7 +66,7 @@ Before analysing big networks, study the \hl{smallest possible network: one neur
 \emph{feedback}, and feedback is what makes networks interesting. This week we use it to introduce two tools we will use all course long:
 \textbf{fixed points} and their \textbf{stability}.
 We do it twice: first with a linear activation function, where everything can be solved exactly, then with a saturating one (\S\ref{sec:nonlin}),
-where the same neuron becomes \textbf{bistable} and can store a memory.
+where the number of fixed points itself changes with the input: a \textbf{bifurcation}.
 \end{intuition}
 
 \section{The autapse}
@@ -656,132 +657,13 @@ A \term{bifurcation diagram} plots the fixed points (vertical axis) against a pa
   \addplot[pgold,very thick,dashed,domain=-0.1444:0.1444,samples=80,variable=\s]({\s-1/(1+exp(-20*\s))},{1/(1+exp(-20*\s))});
   \draw[muted,dotted] (axis cs:-0.803,-0.05)--(axis cs:-0.803,1.08);
   \draw[muted,dotted] (axis cs:-0.197,-0.05)--(axis cs:-0.197,1.08);
-  \node[font=\scriptsize,align=center] at (axis cs:-0.5,0.3) {bistable};
+  \node[font=\scriptsize,align=center] at (axis cs:-0.5,0.3) {3 fixed points};
   \node[font=\scriptsize,pgold] at (axis cs:-0.38,0.62) {unstable};
 \end{axis}
 \end{tikzpicture}
 \figcap{Bifurcation diagram, redrawn after \src{LMLF Fig.\ 2.8} ($\theta=0$, $\beta=20$, $J=1$). Solid: stable fixed points; dashed: unstable. In the shaded band, $-0.803<\hext<-0.197$,
 there are three fixed points. At each edge of the band the dashed branch merges with a solid one: a saddle-node bifurcation.}
 \end{center}
-
-\subsection{Attractors and bistability}
-
-\begin{defn}[State space and attractor]
-The \term{state space} is the set of all possible states of the system; for the autapse it is just the $r$ axis.
-An \term{attractor} is a region of state space to which all nearby trajectories converge \src{LMLF 2.3.1}. A stable fixed point is the simplest attractor; others appear later in the course.
-\end{defn}
-
-\begin{defn}[Bistability]
-A system is \term{bistable} if it has \hl{two stable fixed points} (two attractors). Between them there is always an unstable fixed point, which separates the starting values that go to one from those that go to the other.
-The autapse is bistable for $-0.803<\hext<-0.197$ (with $\theta=0$, $\beta=20$, $J=1$).
-\end{defn}
-
-\begin{example}[Where does the neuron end up? ($\hext=-0.5$, $\tau=10$\,ms)]
-\begin{center}
-\renewcommand{\arraystretch}{1.2}
-\begin{tabular}{c|ccccccc}
-$t$ (ms) & 0 & 10 & 20 & 30 & 50 & 70 & 100\\\hline
-$r(0)=0.40$ & 0.40 & 0.157 & 0.058 & 0.021 & 0.003 & 0.000 & 0.000\\
-$r(0)=0.45$ & 0.45 & 0.194 & 0.072 & 0.026 & 0.004 & 0.001 & 0.000\\
-$r(0)=0.55$ & 0.55 & 0.806 & 0.928 & 0.974 & 0.996 & 0.999 & 1.000\\
-$r(0)=0.60$ & 0.60 & 0.843 & 0.942 & 0.979 & 0.997 & 1.000 & 1.000\\
-\end{tabular}
-\end{center}
-(Numerical solutions.) Starting values only $0.1$ apart end in opposite states. The final state is decided entirely by \hl{which side of $0.5$} the neuron starts on.
-\end{example}
-
-\subsection{Memory: switching with a brief input}
-
-Why care about two stable states? Because a bistable neuron can \hl{store one bit} \src{LMLF 2.3.1}. Left alone in the bistable range, it stays forever in whichever state it is in.
-To write a bit, change $\hext$ \emph{briefly}:
-
-\begin{enumerate}
-  \item The neuron rests in the low state, $\hext=-0.5$.
-  \item A brief pulse raises $\hext$ to $0$, \emph{above} the bifurcation point $-0.197$. Now the low fixed point no longer exists; the only attractor is the high one, and $r$ starts climbing.
-  \item The pulse ends: $\hext$ returns to $-0.5$. The low state exists again, but if $r$ has already passed the watershed $0.5$, it keeps going to the high state.
-  \item The neuron stays high indefinitely, although the input that put it there is long gone. That is memory.
-  \item To erase, pulse $\hext$ \emph{below} $-0.803$ (here to $-1$): the high state disappears and the neuron falls back to the low one, where it stays.
-\end{enumerate}
-
-\begin{center}
-\begin{tikzpicture}
-\begin{axis}[width=0.82\linewidth,height=4.4cm,xmin=0,xmax=120,ymin=-0.05,ymax=1.08,
-  ylabel={$r(t)$},axis lines=left,tick label style={font=\scriptsize},label style={font=\small},xticklabels={}]
-  \addplot[pgreen,very thick] coordinates {(0,0.000) (2,0.000) (4,0.000) (6,0.000) (8,0.000) (10,0.000) (12,0.000) (14,0.000) (16,0.000) (18,0.000) (20,0.000) (22,0.138) (24,0.291) (26,0.419) (28,0.525) (30,0.611) (32,0.681) (34,0.739) (36,0.786) (38,0.824) (40,0.856) (42,0.882) (44,0.903) (46,0.921) (48,0.935) (50,0.947) (52,0.956) (54,0.964) (56,0.971) (58,0.976) (60,0.980) (62,0.984) (64,0.987) (66,0.989) (68,0.991) (70,0.993) (72,0.851) (74,0.699) (76,0.573) (78,0.469) (80,0.384) (82,0.314) (84,0.257) (86,0.211) (88,0.173) (90,0.142) (92,0.116) (94,0.095) (96,0.078) (98,0.064) (100,0.052) (102,0.043) (104,0.035) (106,0.029) (108,0.024) (110,0.019) (112,0.016) (114,0.013) (116,0.011) (118,0.009) (120,0.007)};
-  \addplot[muted,dashed] coordinates {(0,0.5) (120,0.5)};
-  \node[font=\scriptsize,muted,anchor=south west] at (axis cs:96,0.5) {watershed $0.5$};
-\end{axis}
-\end{tikzpicture}
-
-\begin{tikzpicture}
-\begin{axis}[width=0.82\linewidth,height=3.2cm,xmin=0,xmax=120,ymin=-1.1,ymax=0.15,
-  xlabel={$t$ (ms)},ylabel={$\hext$},axis lines=left,tick label style={font=\scriptsize},label style={font=\small},ytick={-1,-0.5,0}]
-  \addplot[pcyan,very thick] coordinates {(0,-0.5) (20,-0.5) (20,0) (35,0) (35,-0.5) (70,-0.5) (70,-1) (85,-1) (85,-0.5) (120,-0.5)};
-\end{axis}
-\end{tikzpicture}
-\figcap{State transitions, simulated after \src{LMLF Fig.\ 2.9} ($\theta=0$, $\beta=20$, $J=1$, $\tau=10$\,ms). A 15\,ms pulse to $\hext=0$ switches the neuron on (it has reached $0.76>0.5$ when the pulse ends);
-a 15\,ms pulse to $\hext=-1$ switches it off (it has fallen to $0.23<0.5$). In between, at the same $\hext=-0.5$, the neuron is high or low depending only on its history.}
-\end{center}
-
-\begin{intuition}[The state depends on history]
-At $t=10$\,ms and at $t=60$\,ms the input is the same, $\hext=-0.5$, but the rate is $0$ in one case and $0.98$ in the other. The difference is \hl{what happened before}.
-This dependence on past input (often called \term{hysteresis}) is what lets a single neuron with feedback hold information; the book develops it into a model of long-term memory in Ch.\ 5.
-\end{intuition}
-
-\begin{pitfall}[The pulse must be long enough]
-Raising $\hext$ is not enough by itself; the rate must cross the watershed $0.5$ \emph{before} the pulse ends. With the same parameters, a 5\,ms pulse to $\hext=0$ brings $r$ only to $0.36$.
-When $\hext$ returns to $-0.5$, the rate is on the low side of $0.5$ and decays back to $0$: nothing is stored.
-\end{pitfall}
-
-\subsection{The two ingredients: positive feedback and saturation}
-
-What makes bistability possible? We need an S-curve that can cross the identity line three times. Two things are required \src{LMLF 2.3.1}:
-\begin{itemize}
-  \item \textbf{Positive feedback} that is strong enough: in the middle crossing the S-curve must be steeper than $1$. Its maximal slope is $(\beta J)/4$ (the effective gain over $4$), so we need
-        \[ \boxed{\ \frac{\beta J}{4} > 1\ }. \]
-        If this fails, the S-curve is flatter than the identity line everywhere and crosses it only once, whatever $\hext$ is. If it holds, a suitable $\hext$ produces three crossings.
-  \item \textbf{Saturation}: the curve must bend back below the identity line at high $r$ (and stay above it at low $r$). That is what the bounded logistic function provides,
-        and what the linear $g$ lacked: there, $J>1$ meant an unstable fixed point and divergence, with no second stable state to land in.
-\end{itemize}
-
-\begin{example}[How much feedback is enough? ($\beta=20$)]
-$\beta J/4 > 1 \iff J > 4/\beta = 0.2$. With the book's $J=1$: $\beta J/4 = 5$, comfortably bistable for some range of $\hext$. With $J=0.1$: $\beta J/4 = 0.5$, one fixed point for every $\hext$, no memory.
-\end{example}
-
-\begin{pitfall}[Three intersections, not two]
-The book says that the bistable regime has ``two intersection points''. It has \emph{three} intersections (fixed points), of which \emph{two} are stable. The unstable middle one is always there, between the two attractors.
-\end{pitfall}
-
-\subsection{A technical aside: the case $\lambda = 1$}
-
-The linearisation decides stability whenever $\lambda\neq1$. When $\lambda=1$ exactly, it gives $\tau\dot{\dr}=0$, which says nothing. This happens precisely at the bifurcation points, where the S-curve is tangent to the identity line.
-
-\textbf{Step 1: expand one order further} \src{LMLF eq.\ 2.23--2.25}. A second-order Taylor expansion adds the curvature term:
-\[ g(h^*+J\dr) \approx g(h^*) + g'(h^*)J\dr + \tfrac12 g''(h^*)J^2\dr^2. \]
-\textbf{Step 2: substitute}. The constant term vanishes (fixed point) and the linear term vanishes ($\lambda=1$), leaving
-\[ \tau\,\dot{\dr} = \tfrac12 J^2 g''(h^*)\,\dr^2. \]
-\textbf{Step 3: read the sign.} $\dr^2>0$ on \emph{both} sides of $r^*$, so $\dot{\dr}$ has the same sign (that of $g''$) on both sides. The flow goes towards $r^*$ on one side and away on the other.
-
-\begin{defn}[Half-stable fixed point]
-A fixed point is \term{half-stable} if the dynamics approach it from one side and leave it on the other.
-\end{defn}
-
-\textbf{Step 4: solve} (the equation is separable): $\displaystyle\frac{d\dr}{\dr^2} = c\,dt$ with $c = \frac{J^2g''(h^*)}{2\tau}$, so $-\frac{1}{\dr} = ct + \text{const}$ and
-\[ \dr(t) = \frac{1}{1/\dr(0) - c\,t}. \]
-This is \term{hyperbolic}, not exponential: much slower near the fixed point.
-
-\begin{example}[At the bifurcation point $\hext=-0.803$ ($\beta=20$, $J=1$, $\tau=10$\,ms)]
-Here $r^*=0.947$, and $g'' = \beta^2 g(1-g)(1-2g) = 400\cdot0.947\cdot0.053\cdot(-0.894) = -17.9$, so $c = -17.9/20 = -0.89$ per ms.
-\begin{itemize}
-  \item From above, $\dr(0)=+0.01$: $\dr(t) = 1/(100+0.89t)$. After $100$\,ms it is $0.0053$: only halved. (An exponential decay with $\tau=10$\,ms would have shrunk it $e^{10}\approx 22\,000$-fold.)
-  \item From below, $\dr(0)=-0.01$: $\dr(t) = 1/(-100+0.89t)$ grows in size and the approximation breaks down after about $100$\,ms; the neuron leaves towards the low state.
-\end{itemize}
-\end{example}
-
-\begin{pitfall}[Linearisation tells you only about the neighbourhood]
-Both the first- and second-order expansions are valid only while $\dr$ is small. They decide \emph{local} stability. Whether a fixed point is reached from far away (global stability) needs the full picture, such as the vector field \src{LMLF 2.3.1}.
-And $\lambda=1$ exactly is a knife-edge: the slightest change of $\hext$ makes $\lambda\neq1$, and the exponential behaviour takes over again.
-\end{pitfall}
 
 % =================================================================
 \parttitle{PART B \textperiodcentered\ BONUS HOUR 2}{Linear Algebra as Geometry}
@@ -1102,7 +984,7 @@ Multiply by $u\cosh^2u>0$: this is $u<\sinh u\cosh u=\tfrac12\sinh2u$, i.e.\ $\s
 \end{center}
 
 \begin{intuition}[The same lesson as Part A]
-Strong enough positive feedback ($J>1$) plus saturation gives \textbf{two stable states}: the population can sit ``high'' or ``low'' and stays there. That is bistability, a memory, exactly as for the logistic autapse.
+Strong enough positive feedback ($J>1$) plus saturation gives \textbf{two stable states}: the population can sit ``high'' or ``low'' and stays there. The logistic autapse has the same picture inside its three-fixed-point band; Week 3 calls this \textbf{bistability} and uses it to store a memory.
 \end{intuition}
 
 \begin{pitfall}[Corrections to the TA notes, 1.1]
@@ -1266,33 +1148,13 @@ $\theta=0$, $J=2$. Where along the $r$ axis is the midpoint of the S-curve $g(Jr
 $\theta=0$, $\beta=20$, $J=1$, $\hext=-0.3$. One fixed point is $r^*=0.243$; check that it is one, and decide its stability. What about $r^*\approx0.0026$?
 
 \textbf{Solution.} $g(0.243-0.3) = g(-0.057) = 1/(1+e^{1.14}) = 0.242\approx0.243$ \checkmark. $\lambda = 20\cdot0.243\cdot0.757 = 3.68>1$: unstable.
-For $r^*=0.0026$: $\lambda = 20\cdot0.0026\cdot0.9974 = 0.052<1$: stable. (The third fixed point, $r^*\approx1$, is also stable: $\hext=-0.3$ is inside the bistable band.)
+For $r^*=0.0026$: $\lambda = 20\cdot0.0026\cdot0.9974 = 0.052<1$: stable. (The third fixed point, $r^*\approx1$, is also stable: $\hext=-0.3$ is inside the three-fixed-point band.)
 \end{example}
 
-\begin{example}[P9: Can it be bistable at all?]
-(a) $\beta=2$, $J=1$. (b) $\beta=20$, $J=0.15$. (c) $\beta=8$, $J=1$. For which can a suitable $\hext$ give two stable states?
-
-\textbf{Solution.} Test $\beta J/4>1$: (a) $0.5$, no. (b) $0.75$, no. (c) $2$, yes. In (a) and (b) the S-curve is everywhere flatter than the identity line, so it crosses it once whatever $\hext$ is.
-\end{example}
-
-\begin{example}[P10: Linear as a special case]
+\begin{example}[P9: Linear as a special case]
 Show that the stability rule $\lambda<1$ reproduces the linear autapse result.
 
 \textbf{Solution.} $g(h)=h$ has $g'=1$ everywhere, so $\lambda = J\cdot1 = J$. The rule becomes $J<1$: stable, $J>1$: unstable, exactly as in the first half of the week.
-\end{example}
-
-\begin{example}[P11: Writing a bit]
-With $\theta=0$, $\beta=20$, $J=1$, $\tau=10$\,ms, the neuron rests at the low state with $\hext=-0.5$. You can pulse $\hext$ to $0$. A 5\,ms pulse brings $r$ to $0.36$, a 15\,ms pulse to $0.76$. Which pulse stores a ``1''? Why does setting $\hext=-0.3$ forever not count as memory?
-
-\textbf{Solution.} Only the 15\,ms pulse: $0.76$ is above the unstable fixed point $0.5$ of $\hext=-0.5$, so the rate continues to the high state; $0.36$ is below it and decays back. Memory means the state persists \emph{after} the input returns to its baseline;
-a permanent change of $\hext$ is just a different input, not a stored bit.
-\end{example}
-
-\begin{example}[P12: Half-stable]
-At the bifurcation point $\hext=-0.197$ ($\beta=20$, $J=1$), $r^*=0.053$. Is $g''(h^*)$ positive or negative, and from which side is the fixed point approached?
-
-\textbf{Solution.} $g''=\beta^2g(1-g)(1-2g)$ with $g=0.053<0.5$, so $g''>0$. Then $\tau\dot{\dr} = \tfrac12J^2g''\dr^2>0$ on both sides: $r$ increases. From below ($\dr<0$) it moves up towards $r^*$; from above it moves away, up towards the high state.
-Half-stable, approached from the left.
 \end{example}
 
 
@@ -1363,10 +1225,6 @@ With $K=1$ in Question 1.2, for which $J>0$ is $(0,0)$ stable, and for which doe
   \item \textbf{Global} stability: reached from every start. \textbf{Local}: reached from nearby starts. Linearisation only tests local stability.
   \item \textbf{Bifurcation}: qualitative change from a smooth parameter change. \textbf{Saddle-node}: a stable and an unstable fixed point merge and vanish; the curves are tangent ($\lambda=1$).
   \item Book values $\theta=0$, $\beta=20$, $J=1$: three fixed points for $-0.803<\hext<-0.197$, otherwise one.
-  \item \textbf{Attractor}: region all nearby trajectories go to. \textbf{Bistable}: two stable fixed points, an unstable one between them as the watershed.
-  \item \textbf{Memory}: a brief pulse of $\hext$ past a bifurcation point flips the state, which persists after the pulse (the state depends on history).
-  \item \textbf{Ingredients}: positive feedback ($\beta J/4>1$) and saturation.
-  \item $\lambda=1$: second order, $\tau\dot{\dr} = \tfrac12J^2g''\dr^2$: \textbf{half-stable}, hyperbolic (slow) approach.
 \end{itemize}
 \end{formula}
 
