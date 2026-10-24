@@ -25,6 +25,8 @@
   \addtocontents{toc}{\protect\tocpart{#1}}}
 \newcommand{\tocpart}[1]{\par\smallskip{\ttfamily\scriptsize\color{pgreen}#1}\par}
 
+\graphicspath{{figures/week02/}}
+
 \begin{document}
 
 % ---------------- title block ----------------
@@ -462,65 +464,15 @@ The neuron then reaches half its maximal rate already at a smaller $r$, because 
 \begin{pitfall}[Left, not right]
 The book writes that increasing $\hext$ ``results in a shift of the logistic function to the right''. As a function of $r$, the curve moves to the \emph{left}: its midpoint
 $(\theta-\hext)/J$ decreases when $\hext$ grows. Check with the book's own numbers ($\theta=0$, $J=1$): the midpoint is at $r=1$ for $\hext=-1$, at $r=0.5$ for $\hext=-0.5$ and at $r=0$ for $\hext=0$.
-The figure below (and \src{LMLF Fig.\ 2.7}) shows exactly this leftward slide.
+The book's own figure below shows exactly this leftward slide.
 \end{pitfall}
 
 \begin{center}
-\pgfplotsset{fpaxis/.style={scale only axis,width=0.24\linewidth,height=2.9cm,xmin=-0.1,xmax=1.15,axis lines=left,
-  tick label style={font=\tiny},label style={font=\scriptsize},title style={font=\small},xtick={0,0.5,1},xlabel={$r$}}}
-\begin{tikzpicture}
-\begin{axis}[fpaxis,ymin=-0.1,ymax=1.15,ytick={0,0.5,1},title={$\hext=-1$}]
-  \addplot[pgreen,thick,domain=-0.1:1.15,samples=200]{1/(1+exp(-20*(x-1)))};
-  \addplot[muted,dashed,domain=-0.1:1.15]{x};
-  \addplot[only marks,mark=*,mark size=2.2pt,ppink] coordinates{(0,0)};
-\end{axis}
-\end{tikzpicture}\hfill
-\begin{tikzpicture}
-\begin{axis}[fpaxis,ymin=-0.1,ymax=1.15,ytick={0,0.5,1},title={$\hext=-0.5$}]
-  \addplot[pgreen,thick,domain=-0.1:1.15,samples=200]{1/(1+exp(-20*(x-0.5)))};
-  \addplot[muted,dashed,domain=-0.1:1.15]{x};
-  \addplot[only marks,mark=*,mark size=2.2pt,ppink] coordinates{(0,0) (1,1)};
-  \addplot[only marks,mark=o,mark size=2.2pt,ppink,thick] coordinates{(0.5,0.5)};
-\end{axis}
-\end{tikzpicture}\hfill
-\begin{tikzpicture}
-\begin{axis}[fpaxis,ymin=-0.1,ymax=1.15,ytick={0,0.5,1},title={$\hext=0$}]
-  \addplot[pgreen,thick,domain=-0.1:1.15,samples=200]{1/(1+exp(-20*x))};
-  \addplot[muted,dashed,domain=-0.1:1.15]{x};
-  \addplot[only marks,mark=*,mark size=2.2pt,ppink] coordinates{(1,1)};
-\end{axis}
-\end{tikzpicture}
-
-\vspace{4pt}
-\begin{tikzpicture}
-\begin{axis}[fpaxis,ymin=-0.7,ymax=0.7,ytick={-0.5,0,0.5},ylabel={$\tau\dot r$}]
-  \addplot[pgreen,thick,domain=-0.1:1.15,samples=200]{-x+1/(1+exp(-20*(x-1)))};
-  \draw[black!60] (axis cs:-0.1,0)--(axis cs:1.15,0);
-  \draw[->,very thick,pgold] (axis cs:0.95,0)--(axis cs:0.25,0);
-  \addplot[only marks,mark=*,mark size=2.2pt,ppink] coordinates{(0,0)};
-\end{axis}
-\end{tikzpicture}\hfill
-\begin{tikzpicture}
-\begin{axis}[fpaxis,ymin=-0.7,ymax=0.7,ytick={-0.5,0,0.5}]
-  \addplot[pgreen,thick,domain=-0.1:1.15,samples=200]{-x+1/(1+exp(-20*(x-0.5)))};
-  \draw[black!60] (axis cs:-0.1,0)--(axis cs:1.15,0);
-  \draw[->,very thick,pgold] (axis cs:0.42,0)--(axis cs:0.1,0);
-  \draw[->,very thick,pgold] (axis cs:0.58,0)--(axis cs:0.9,0);
-  \addplot[only marks,mark=*,mark size=2.2pt,ppink] coordinates{(0,0) (1,0)};
-  \addplot[only marks,mark=o,mark size=2.2pt,ppink,thick] coordinates{(0.5,0)};
-\end{axis}
-\end{tikzpicture}\hfill
-\begin{tikzpicture}
-\begin{axis}[fpaxis,ymin=-0.7,ymax=0.7,ytick={-0.5,0,0.5}]
-  \addplot[pgreen,thick,domain=-0.1:1.15,samples=200]{-x+1/(1+exp(-20*x))};
-  \draw[black!60] (axis cs:-0.1,0)--(axis cs:1.15,0);
-  \draw[->,very thick,pgold] (axis cs:0.05,0)--(axis cs:0.75,0);
-  \addplot[only marks,mark=*,mark size=2.2pt,ppink] coordinates{(1,0)};
-\end{axis}
-\end{tikzpicture}
-\figcap{Redrawn after \src{LMLF Fig.\ 2.7}; $\theta=0$, $\beta=20$, $J=1$. \textbf{Top}: the S-curve $g(r+\hext)$ (green) and the identity line (dashed); the intersections are the fixed points.
-\textbf{Bottom}: the vector field $\tau\dot r = -r+g(r+\hext)$ with the direction of motion on the $r$ axis (arrows). Filled dots: stable fixed points; open dot: unstable.
-Left: one low-activity fixed point. Middle: three fixed points. Right: one high-activity fixed point.}
+\fcolorbox{border}{white}{\includegraphics[width=0.78\linewidth]{autapse_fixed_points_vector_field}}
+\figcap{\src{LMLF Fig.\ 2.7}; $\theta=0$, $\beta=20$, $J=1$. \textbf{Top}: the S-curve $g(r+\hext)$ (solid) and the identity line (dashed); the intersections are the fixed points.
+\textbf{Bottom}: the vector field $\dot r$ against $r$; the small arrowheads on the dashed zero line show which way $r$ moves.
+Left ($\hext=-1$): one fixed point, $r^*\approx0$, low activity and stable. Middle ($\hext=-0.5$): three fixed points, $r^*\approx0$ and $r^*\approx1$ stable (arrows point in), $r^*=0.5$ unstable (arrows point out).
+Right ($\hext=0$): one fixed point, $r^*\approx1$, high activity and stable.}
 \end{center}
 
 \begin{example}[Finding the fixed points for $\hext=-0.5$ by hand]

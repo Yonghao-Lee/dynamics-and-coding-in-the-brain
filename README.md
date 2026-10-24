@@ -50,6 +50,6 @@ pdflatex -interaction=nonstopmode week01.tex   # second run for the contents
 - The course lectures and TA sessions (Y. Loewenstein, Y. Burak and the teaching assistants).
 - Y. Loewenstein, G. Mongillo, I. Landau and L. Fox, *The Dynamics of Computation in Neuronal Networks* (draft). Its explanations are cited in the text as [LMLF].
 
-The figures in `figures/` are taken from the lecture slides and remain the property of their original authors. They are reproduced here for study purposes, with the original references given in the captions.
+The figures in `figures/` are taken from the lecture slides and the course book [LMLF] and remain the property of their original authors. They are reproduced here for study purposes, with the original references given in the captions.
 
 These are unofficial student notes. If you find an error, please open an issue.
